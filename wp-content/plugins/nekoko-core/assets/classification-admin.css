@@ -1,0 +1,4 @@
+.nekoko-classification-tree { margin: .5rem 0; padding-inline-start: 1rem; list-style: none; }
+.nekoko-classification-tree li { margin-block: .4rem; }
+.nekoko-classification-tree:empty { display: none; }
+.nekoko-classification [hidden] { display: none; }

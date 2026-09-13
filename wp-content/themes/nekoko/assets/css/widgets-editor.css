@@ -1,0 +1,45 @@
+/*
+ * Widgets editor only. The selector starts at the widget editor's own canvas,
+ * so these rules cannot affect post/page editing or the public footer.
+ */
+.blocks-widgets-container .wp-block-widget-area__inner-blocks.editor-styles-wrapper {
+	background-color: #fff;
+	color: #1f2937;
+}
+
+.blocks-widgets-container .wp-block-widget-area__inner-blocks.editor-styles-wrapper :is(
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6,
+	p,
+	li,
+	blockquote,
+	figcaption,
+	.wp-block-heading,
+	.wp-block-paragraph,
+	.wp-block-list,
+	.wp-block-navigation-item__content,
+	.wp-block-navigation-link__content,
+	.block-editor-rich-text__editable,
+	.block-editor-default-block-appender__content,
+	.block-list-appender
+) {
+	color: #1f2937;
+}
+
+.blocks-widgets-container .wp-block-widget-area__inner-blocks.editor-styles-wrapper a:not(.wp-block-social-link-anchor) {
+	color: #004682;
+}
+
+.blocks-widgets-container .wp-block-widget-area__inner-blocks.editor-styles-wrapper a:not(.wp-block-social-link-anchor):hover,
+.blocks-widgets-container .wp-block-widget-area__inner-blocks.editor-styles-wrapper a:not(.wp-block-social-link-anchor):focus-visible {
+	color: #003663;
+}
+
+/* Social links retain their own colored circular backgrounds and icon color. */
+.blocks-widgets-container .wp-block-widget-area__inner-blocks.editor-styles-wrapper .wp-block-social-link-anchor {
+	color: inherit;
+}

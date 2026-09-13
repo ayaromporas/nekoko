@@ -1,0 +1,14 @@
+Google Sans Flex
+
+Source: https://fonts.google.com/specimen/Google+Sans+Flex
+Served by the official Google Fonts API and self-hosted here for performance.
+Google Fonts lists this family under the SIL Open Font License 1.1.
+
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+
+The Font Software may be used, studied, modified and redistributed freely as
+long as it is not sold by itself. The font and derivative works may be bundled,
+embedded, redistributed and/or sold with software, subject to the terms of the
+SIL Open Font License 1.1.
+
+Full license text and FAQ: https://openfontlicense.org

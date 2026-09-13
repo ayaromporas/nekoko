@@ -1,0 +1,8 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) { exit; }
+function nekoko_core_verified_user_column( $columns ) { $columns['nekoko_email_verified'] = 'Email potvrđen'; return $columns; }
+add_filter( 'manage_users_columns', 'nekoko_core_verified_user_column' );
+function nekoko_core_verified_user_column_value( $value, $column, $user_id ) { if ( 'nekoko_email_verified' !== $column ) { return $value; } if ( nekoko_core_is_verified_user( $user_id ) ) { return 'Da'; } $manual = wp_nonce_url( add_query_arg( array( 'nekoko_verify_user' => $user_id ), admin_url( 'users.php' ) ), 'nekoko_verify_user_' . $user_id ); $resend = wp_nonce_url( add_query_arg( array( 'nekoko_resend_user' => $user_id ), admin_url( 'users.php' ) ), 'nekoko_resend_user_' . $user_id ); return 'Ne · <a href="' . esc_url( $manual ) . '">Potvrdi ručno</a> · <a href="' . esc_url( $resend ) . '">Pošalji ponovo email</a>'; }
+add_filter( 'manage_users_custom_column', 'nekoko_core_verified_user_column_value', 10, 3 );
+function nekoko_core_verified_user_admin_actions() { if ( ! current_user_can( 'manage_options' ) ) { return; } if ( isset( $_GET['nekoko_verify_user'] ) ) { $id = absint( $_GET['nekoko_verify_user'] ); check_admin_referer( 'nekoko_verify_user_' . $id ); update_user_meta( $id, 'nekoko_email_verified', '1' ); wp_safe_redirect( admin_url( 'users.php' ) ); exit; } if ( isset( $_GET['nekoko_resend_user'] ) ) { $id = absint( $_GET['nekoko_resend_user'] ); check_admin_referer( 'nekoko_resend_user_' . $id ); nekoko_core_issue_verification( $id ); wp_safe_redirect( admin_url( 'users.php' ) ); exit; } }
+add_action( 'admin_init', 'nekoko_core_verified_user_admin_actions' );

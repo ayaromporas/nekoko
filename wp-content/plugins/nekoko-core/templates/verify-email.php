@@ -1,0 +1,1 @@
+<?php if ( ! defined( 'ABSPATH' ) ) { exit; } ?><div class="nekoko-form"><h2>Potvrda emaila</h2><p>Otvorite link koji smo poslali na vašu email adresu. Link je jednokratan i vremenski ograničen.</p><p><a href="<?php echo esc_url( nekoko_core_page_url( 'prijava' ) ); ?>">Nazad na prijavu</a></p></div>
