@@ -25,6 +25,10 @@ wp-config.php
 # Uploads
 /wp-content/uploads/
 
+# Duplicator Pro plugin and local backup artifacts
+/wp-content/plugins/duplicator-pro/
+/wp-content/backups-dup-pro/
+
 # Log files
 *.log
 
@@ -33,4 +37,9 @@ wp-config.php
 
 
 #/wp-content/plugins
+
+
+# Cache
+
+/wp-content/cache
 
