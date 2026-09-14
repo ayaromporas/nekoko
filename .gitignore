@@ -29,6 +29,10 @@ wp-config.php
 /wp-content/plugins/duplicator-pro/
 /wp-content/backups-dup-pro/
 
+# Generated cache and local plugin credentials
+/wp-content/cache/
+/wp-content/plugins/srbtranslatin/DOCKER_ENV
+
 # Log files
 *.log
 
