@@ -57,12 +57,13 @@ function nekoko_core_classification_admin_assets() {
 	$screen = get_current_screen();
 	if ( ! $screen || 'oglas' !== $screen->post_type ) { return; }
 	wp_enqueue_script( 'nekoko-classification-admin', plugins_url( 'assets/classification-admin.js', NEKOKO_CORE_FILE ), array(), filemtime( dirname( NEKOKO_CORE_FILE ) . '/assets/classification-admin.js' ), true );
+	wp_localize_script( 'nekoko-classification-admin', 'nekokoListingApproval', array( 'ajaxUrl' => admin_url( 'admin-ajax.php' ), 'nonce' => wp_create_nonce( 'nekoko_listing_approval' ), 'error' => 'Status oglasa nije moguće promeniti. Pokušajte ponovo.' ) );
 	wp_enqueue_style( 'nekoko-classification-admin', plugins_url( 'assets/classification-admin.css', NEKOKO_CORE_FILE ), array(), filemtime( dirname( NEKOKO_CORE_FILE ) . '/assets/classification-admin.css' ) );
 }
 add_action( 'admin_enqueue_scripts', 'nekoko_core_classification_admin_assets' );
 
 add_filter( 'manage_oglas_posts_columns', function( $columns ) {
-	return array( 'cb' => $columns['cb'] ?? '', 'title' => 'Naslov', 'author' => 'Autor', 'nekoko_branch' => 'Tip', 'nekoko_category' => 'Kategorija', 'date' => 'Datum' );
+	return array( 'cb' => $columns['cb'] ?? '', 'title' => 'Naslov', 'author' => 'Autor', 'nekoko_branch' => 'Tip', 'nekoko_category' => 'Kategorija', 'nekoko_approval' => 'Odobren', 'date' => 'Datum' );
 } );
 add_action( 'manage_oglas_posts_custom_column', function( $column, $post_id ) {
 	if ( 'nekoko_branch' === $column ) {
@@ -74,6 +75,30 @@ add_action( 'manage_oglas_posts_custom_column', function( $column, $post_id ) {
 		echo $paths ? implode( '<br>', $paths ) : '—';
 	}
 }, 10, 2 );
+
+add_action( 'manage_oglas_posts_custom_column', function( $column, $post_id ) {
+	if ( 'nekoko_approval' !== $column ) {
+		return;
+	}
+	$approved = 'publish' === get_post_status( $post_id );
+	printf( '<label class="nekoko-listing-approval"><input type="checkbox" data-nekoko-listing-approval data-post-id="%1$d" %2$s aria-label="%3$s"><span data-nekoko-listing-approval-status>%4$s</span></label>', $post_id, checked( $approved, true, false ), esc_attr( $approved ? 'Oglas je odobren. Odznačite za vraćanje na čekanje.' : 'Oglas je na čekanju. Označite za odobravanje.' ), esc_html( $approved ? 'Odobren' : 'Na čekanju' ) );
+}, 10, 2 );
+
+function nekoko_core_toggle_listing_approval() {
+	check_ajax_referer( 'nekoko_listing_approval', 'nonce' );
+	$post_id  = absint( $_POST['post_id'] ?? 0 );
+	$approved = ! empty( $_POST['approved'] );
+	if ( ! $post_id || 'oglas' !== get_post_type( $post_id ) || ! current_user_can( 'edit_post', $post_id ) ) {
+		wp_send_json_error( array( 'message' => 'Nemate dozvolu za izmenu ovog oglasa.' ), 403 );
+	}
+	$updated = wp_update_post( array( 'ID' => $post_id, 'post_status' => $approved ? 'publish' : 'draft' ), true );
+	if ( is_wp_error( $updated ) ) {
+		wp_send_json_error( array( 'message' => $updated->get_error_message() ), 500 );
+	}
+	wp_send_json_success( array( 'approved' => $approved, 'label' => $approved ? 'Odobren' : 'Na čekanju' ) );
+}
+add_action( 'wp_ajax_nekoko_toggle_listing_approval', 'nekoko_core_toggle_listing_approval' );
+
 add_filter( 'manage_edit-kategorija_oglasa_columns', function( $columns ) { $columns['nekoko_branch'] = 'Tip/Grana'; return $columns; } );
 add_filter( 'manage_kategorija_oglasa_custom_column', function( $output, $column, $id ) {
 	if ( 'nekoko_branch' !== $column ) { return $output; }

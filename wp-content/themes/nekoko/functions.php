@@ -70,6 +70,10 @@ function nekoko_register_new_button_styles() {
 		'nekoko-blue-small'       => 'NekoKO: Plavo – malo',
 		'nekoko-white-blue-small' => 'NekoKO: Belo/plavi okvir – malo',
 		'nekoko-white-red-small'  => 'NekoKO: Belo/crveni okvir – malo',
+		'nekoko-text-blue'        => 'NekoKO: Tekstualno – plavo',
+		'nekoko-text-red'         => 'NekoKO: Tekstualno – crveno',
+		'nekoko-text-yellow'      => 'NekoKO: Tekstualno – žuto',
+		'nekoko-text-black'       => 'NekoKO: Tekstualno – crno',
 	);
 	foreach ( $button_styles as $name => $label ) { register_block_style( 'core/button', array( 'name' => $name, 'label' => $label ) ); }
 }
@@ -78,8 +82,14 @@ add_action( 'init', 'nekoko_register_new_button_styles', 11 );
 function nekoko_register_pill_styles() {
 	register_block_style( 'core/paragraph', array( 'name' => 'nekoko-pill-blue', 'label' => 'NekoKO: Pilula – plava' ) );
 	register_block_style( 'core/paragraph', array( 'name' => 'nekoko-pill-red', 'label' => 'NekoKO: Pilula – crvena' ) );
+	register_block_style( 'core/paragraph', array( 'name' => 'nekoko-pill-light-blue', 'label' => 'NekoKO: Pilula – svetloplava' ) );
 }
 add_action( 'init', 'nekoko_register_pill_styles', 12 );
+
+function nekoko_register_light_red_pill_style() {
+	register_block_style( 'core/paragraph', array( 'name' => 'nekoko-pill-light-red', 'label' => 'NekoKO: Pilula – svetlocrvena' ) );
+}
+add_action( 'init', 'nekoko_register_light_red_pill_style', 13 );
 
 function nekoko_register_button_pattern() {
 	register_block_pattern_category( 'nekoko', array( 'label' => 'NekoKO' ) );
@@ -97,7 +107,7 @@ function nekoko_button_pattern_content() {
 }
 
 function nekoko_update_test_page_buttons() {
-	$version = '1';
+	$version = '2';
 	if ( get_option( 'nekoko_test_page_buttons_version' ) === $version ) { return; }
 	$page = get_page_by_path( 'test-page', OBJECT, 'page' );
 	if ( ! $page ) { return; }
@@ -105,6 +115,8 @@ function nekoko_update_test_page_buttons() {
 	foreach ( array( 'nekoko-yellow', 'nekoko-blue', 'nekoko-white-blue', 'nekoko-red' ) as $style ) { $section .= '<!-- wp:button {"className":"is-style-' . $style . '"} --><div class="wp-block-button is-style-' . $style . '"><a class="wp-block-button__link wp-element-button" href="/prijava/">Prijava</a></div><!-- /wp:button -->'; }
 	$section .= '</div><!-- /wp:buttons --><!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Mala dugmad</h3><!-- /wp:heading --><!-- wp:buttons --><div class="wp-block-buttons">';
 	foreach ( array( 'nekoko-yellow-small', 'nekoko-blue-small', 'nekoko-white-blue-small', 'nekoko-white-red-small' ) as $style ) { $section .= '<!-- wp:button {"className":"is-style-' . $style . '"} --><div class="wp-block-button is-style-' . $style . '"><a class="wp-block-button__link wp-element-button" href="/prijava/">Prijava</a></div><!-- /wp:button -->'; }
+	$section .= '</div><!-- /wp:buttons --><!-- wp:heading {"level":3} --><h3 class="wp-block-heading">Tekstualna dugmad</h3><!-- /wp:heading --><!-- wp:buttons --><div class="wp-block-buttons">';
+	foreach ( array( 'nekoko-text-blue', 'nekoko-text-red', 'nekoko-text-yellow', 'nekoko-text-black' ) as $style ) { $section .= '<!-- wp:button {"className":"is-style-' . $style . '"} --><div class="wp-block-button is-style-' . $style . '"><a class="wp-block-button__link wp-element-button" href="/prijava/">Pogledaj oglase</a></div><!-- /wp:button -->'; }
 	$section .= '</div><!-- /wp:buttons -->';
 	$updated = preg_replace( '~<!-- wp:heading \{\\"anchor\\":\\"biblioteka-dugmici\\"\} -->.*?(?=<!-- wp:heading \{\\"anchor\\":\\"biblioteka-mediji\\"\} -->)~s', $section, $page->post_content, 1, $count );
 	if ( 1 === $count ) { wp_update_post( array( 'ID' => $page->ID, 'post_content' => $updated ) ); update_option( 'nekoko_test_page_buttons_version', $version, false ); }
@@ -124,6 +136,34 @@ function nekoko_update_test_page_pills() {
 	if ( wp_update_post( array( 'ID' => $page->ID, 'post_content' => wp_slash( $updated ) ), true ) ) { update_option( 'nekoko_test_page_pills_version', $version, false ); }
 }
 add_action( 'init', 'nekoko_update_test_page_pills', 31 );
+
+function nekoko_add_test_page_light_blue_pill() {
+	$version = '1';
+	if ( get_option( 'nekoko_test_page_light_blue_pill_version' ) === $version ) { return; }
+	$page = get_page_by_path( 'test-page', OBJECT, 'page' );
+	if ( ! $page || false !== strpos( $page->post_content, 'is-style-nekoko-pill-light-blue' ) ) { return; }
+	$anchor = '<!-- wp:heading {"anchor":"biblioteka-dugmici"} -->';
+	$position = strpos( $page->post_content, $anchor );
+	if ( false === $position ) { return; }
+	$section = '<!-- wp:paragraph {"className":"is-style-nekoko-pill-light-blue"} --><p class="is-style-nekoko-pill-light-blue">Podkategorija</p><!-- /wp:paragraph -->';
+	$updated = substr( $page->post_content, 0, $position ) . $section . "\n\n" . substr( $page->post_content, $position );
+	if ( wp_update_post( array( 'ID' => $page->ID, 'post_content' => wp_slash( $updated ) ), true ) ) { update_option( 'nekoko_test_page_light_blue_pill_version', $version, false ); }
+}
+add_action( 'init', 'nekoko_add_test_page_light_blue_pill', 32 );
+
+function nekoko_add_test_page_light_red_pill() {
+	$version = '1';
+	if ( get_option( 'nekoko_test_page_light_red_pill_version' ) === $version ) { return; }
+	$page = get_page_by_path( 'test-page', OBJECT, 'page' );
+	if ( ! $page || false !== strpos( $page->post_content, 'is-style-nekoko-pill-light-red' ) ) { return; }
+	$anchor = '<!-- wp:heading {"anchor":"biblioteka-dugmici"} -->';
+	$position = strpos( $page->post_content, $anchor );
+	if ( false === $position ) { return; }
+	$section = '<!-- wp:paragraph {"className":"is-style-nekoko-pill-light-red"} --><p class="is-style-nekoko-pill-light-red">Podkategorija – Potražnja</p><!-- /wp:paragraph -->';
+	$updated = substr( $page->post_content, 0, $position ) . $section . "\n\n" . substr( $page->post_content, $position );
+	if ( wp_update_post( array( 'ID' => $page->ID, 'post_content' => wp_slash( $updated ) ), true ) ) { update_option( 'nekoko_test_page_light_red_pill_version', $version, false ); }
+}
+add_action( 'init', 'nekoko_add_test_page_light_red_pill', 33 );
 
 function nekoko_widgets_init() {
 	register_sidebar( array( 'name' => __( 'Sidebar', 'nekoko' ), 'id' => 'sidebar-1', 'description' => __( 'Add widgets shown beside posts and archives.', 'nekoko' ), 'before_widget' => '<section id="%1$s" class="widget %2$s">', 'after_widget' => '</section>', 'before_title' => '<h2 class="widget-title">', 'after_title' => '</h2>' ) );

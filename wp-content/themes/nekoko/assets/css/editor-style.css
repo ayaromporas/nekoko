@@ -42,3 +42,4 @@ a { color: #004682; }
 .wp-block-paragraph.is-style-nekoko-pill-red { display: inline-flex; align-items: center; width: fit-content; margin: 0 0 .75rem; padding: .35rem .85rem; border: 1px solid currentColor; border-radius: 999px; background: #fff; font-size: .8125rem; font-weight: 500; line-height: 1.2; }
 .wp-block-paragraph.is-style-nekoko-pill-blue { color: #004682; }
 .wp-block-paragraph.is-style-nekoko-pill-red { color: #BD433F; }
+.wp-block-paragraph.is-style-nekoko-pill-light-red { display: inline-flex; align-items: center; width: fit-content; margin: 0 0 .75rem; padding: .35rem .85rem; border: 1px solid #f2cbc8; border-radius: 999px; background: #fbe9e8; color: #BD433F; font-size: .8125rem; font-weight: 500; line-height: 1.2; }

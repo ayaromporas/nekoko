@@ -11,6 +11,16 @@ function nekoko_core_category_roots() {
 	return $roots;
 }
 
+/** Root taxonomy terms are represented by their dedicated landing pages. */
+function nekoko_core_redirect_root_category_landing_pages() {
+	if ( ! is_tax( 'kategorija_oglasa' ) ) { return; }
+	$term = get_queried_object();
+	if ( ! $term || is_wp_error( $term ) || (int) $term->parent || ! in_array( $term->slug, array( 'ponuda', 'potraznja' ), true ) ) { return; }
+	wp_safe_redirect( nekoko_core_page_url( $term->slug ), 301 );
+	exit;
+}
+add_action( 'template_redirect', 'nekoko_core_redirect_root_category_landing_pages', 1 );
+
 function nekoko_core_category_root( $term_id ) {
 	$term = get_term( (int) $term_id, 'kategorija_oglasa' );
 	$visited = array();

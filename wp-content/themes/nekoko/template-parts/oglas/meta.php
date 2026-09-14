@@ -26,7 +26,7 @@
 		echo $nekoko_tags && ! is_wp_error( $nekoko_tags ) ? wp_kses_post( $nekoko_tags ) : 'Nije navedeno';
 	?></dd>
 	<dt>Autor</dt>
-	<dd><?php echo esc_html( get_the_author() ); ?></dd>
+	<dd><a href="<?php echo esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ); ?>"><?php echo esc_html( get_the_author() ); ?></a></dd>
 	<dt>Datum objave</dt>
 	<dd><time datetime="<?php echo esc_attr( get_the_date( DATE_W3C ) ); ?>"><?php echo esc_html( get_the_date() ); ?></time></dd>
 </dl>

@@ -2,3 +2,7 @@
 .nekoko-classification-tree li { margin-block: .4rem; }
 .nekoko-classification-tree:empty { display: none; }
 .nekoko-classification [hidden] { display: none; }
+.column-nekoko_approval { width: 8.5rem; }
+.nekoko-listing-approval { display: inline-flex; align-items: center; gap: .45rem; font-weight: 600; white-space: nowrap; }
+.nekoko-listing-approval input { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: #2271b1; }
+.nekoko-listing-approval input:disabled { opacity: .55; }

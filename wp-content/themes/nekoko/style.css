@@ -61,6 +61,7 @@ Tags: custom-logo, custom-menu, featured-images, threaded-comments, translation-
 	--nekoko-grid-columns: 12;
 	--nekoko-grid-gap: 1.5rem;
 	--nekoko-radius: 0.75rem;
+	--nekoko-card-radius: 0.75rem;
 	--nekoko-font-size-h1: 69px;
 	--nekoko-font-size-h2: 55px;
 	--nekoko-font-size-h3: 44px;
@@ -141,7 +142,8 @@ input[type="submit"]:focus,
 .has-nekoko-brick-color { color: var(--nekoko-brick) !important; }
 .has-nekoko-brick-background-color { background-color: var(--nekoko-brick) !important; color: var(--nekoko-white); }
 .wp-block-paragraph.is-style-nekoko-pill-blue,
-.wp-block-paragraph.is-style-nekoko-pill-red {
+.wp-block-paragraph.is-style-nekoko-pill-red,
+.wp-block-paragraph.is-style-nekoko-pill-light-blue {
 	display: inline-flex;
 	align-items: center;
 	width: fit-content;
@@ -156,6 +158,8 @@ input[type="submit"]:focus,
 }
 .wp-block-paragraph.is-style-nekoko-pill-blue { color: var(--nekoko-primary); }
 .wp-block-paragraph.is-style-nekoko-pill-red { color: var(--nekoko-brick); }
+.wp-block-paragraph.is-style-nekoko-pill-light-blue { border-color: #d2e9fc; background: #e4f2ff; color: var(--nekoko-primary); }
+.wp-block-paragraph.is-style-nekoko-pill-light-red { display: inline-flex; align-items: center; width: fit-content; margin: 0 0 .75rem; padding: .35rem .85rem; border: 1px solid #f2cbc8; border-radius: 999px; background: #fbe9e8; color: var(--nekoko-brick); font-size: .8125rem; font-weight: 500; line-height: 1.2; }
 .screen-reader-text { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .screen-reader-text:focus { top: 1rem; left: 1rem; z-index: 100000; width: auto; height: auto; padding: .75rem 1rem; margin: 0; overflow: visible; clip: auto; background: #fff; color: var(--nekoko-ink); box-shadow: 0 2px 8px rgba(0, 0, 0, .15); }
 .site-header, .site-footer { background: var(--nekoko-primary); color: var(--nekoko-white); }
@@ -221,7 +225,7 @@ input[type="submit"]:focus,
 .nekoko-home-hero__secondary-action { border-color: var(--nekoko-primary); background: var(--nekoko-white); color: var(--nekoko-primary); }
 .nekoko-home-hero__secondary-action:hover, .nekoko-home-hero__secondary-action:focus { border-color: var(--nekoko-primary-dark); background: var(--nekoko-primary-dark); color: var(--nekoko-white); }
 .nekoko-home-hero__visual { align-self: center; }
-.nekoko-home-hero__image { display: block; width: 100%; max-width: 30rem; margin-inline: auto; border-radius: 1.5rem; box-shadow: 0 1.25rem 3rem rgba(0, 70, 130, .14); }
+.nekoko-home-hero__image { display: block; width: 100%; max-width: 30rem; margin-inline: auto; }
 .home-how-it-works { width: min(calc(100% - 2rem), var(--nekoko-content-width)); margin: 0 auto; padding: clamp(3.5rem, 8vw, 6rem) 0; }
 .home-how-it-works h2 { margin-top: 0; color: var(--nekoko-ink); }
 .content-area { min-width: 0; }
@@ -307,3 +311,21 @@ input[type="submit"]:focus,
 }
 @media (max-width: 48rem) { .site-content { grid-template-columns: 1fr; gap: 1.5rem; } }
 @media (prefers-reduced-motion: reduce) { .menu-toggle__icon span { transition: none; } }
+
+.nekoko-public-profile { max-width: var(--nekoko-content-width); margin: 3rem auto 5rem; }
+.nekoko-public-profile__header { display: flex; align-items: center; gap: 1.5rem; padding: 2rem; border: 1px solid var(--nekoko-border); border-radius: var(--nekoko-card-radius); background: var(--nekoko-white); }
+.nekoko-public-profile__image { flex: 0 0 auto; width: 8rem; height: 8rem; border-radius: 50%; object-fit: cover; }
+.nekoko-public-profile__eyebrow { margin: 0 0 .35rem; color: var(--nekoko-primary); font-size: var(--nekoko-font-size-small); font-weight: 700; }
+.nekoko-public-profile__header h1 { margin: 0; }
+.nekoko-public-profile__city { margin: .35rem 0 0; color: var(--nekoko-muted); }
+.nekoko-public-profile__details { margin-top: 1.5rem; padding: 1.5rem 2rem; border-radius: var(--nekoko-card-radius); background: #f5f2eb; }
+.nekoko-public-profile__details p { margin: 0; }
+.nekoko-public-profile__details p + p { margin-top: .75rem; }
+.nekoko-public-profile__listings { margin-top: 3rem; }
+.nekoko-public-profile__listing-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
+.nekoko-public-profile__listing { display: flex; flex-direction: column; padding: 1.25rem; border: 1px solid var(--nekoko-border); border-radius: var(--nekoko-card-radius); background: var(--nekoko-white); box-shadow: 0 .5rem 1.25rem rgba(31, 41, 55, .07); }
+.nekoko-public-profile__listing img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: .5rem; }
+.nekoko-public-profile__listing h3 { margin: 1rem 0 .5rem; font-size: 1.35rem; }
+.nekoko-public-profile__listing p { margin: 0 0 1rem; font-size: 1rem; }
+.nekoko-public-profile__listing .nekoko-text-link { margin-top: auto; font-weight: 700; text-decoration: none; }
+@media (max-width: 48rem) { .nekoko-public-profile { margin: 1.5rem 1rem 3rem; }.nekoko-public-profile__header { align-items: flex-start; padding: 1.25rem; }.nekoko-public-profile__image { width: 5rem; height: 5rem; }.nekoko-public-profile__listing-grid { grid-template-columns: 1fr; } }
