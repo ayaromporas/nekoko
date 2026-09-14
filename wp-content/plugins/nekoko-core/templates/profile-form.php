@@ -78,6 +78,7 @@ delete_transient( 'nekoko_profile_password_error_' . $id );
 			</span>
 			<span id="nekoko-phone-help" class="nekoko-form__validation" hidden>Unesite samo cifre, bez početne nule i bez pozivnog broja, npr. 641234567.</span>
 		</p>
+		<p class="nekoko-phone-visibility"><label><input type="checkbox" name="nekoko_show_phone" value="1" <?php checked( get_user_meta( $id, 'nekoko_show_phone', true ), '1' ); ?>> Dozvoljavam da se moj telefon vidi na mom profilu</label></p>
 		<p><label>Grad/opština<input name="nekoko_city" value="<?php echo esc_attr( get_user_meta( $id, 'nekoko_city', true ) ); ?>"></label></p>
 		<p><label><input type="checkbox" name="nekoko_show_city" value="1" <?php checked( get_user_meta( $id, 'nekoko_show_city', true ), '1' ); ?>> Dozvoljavam da se moja lokacija vidi na mom profilu</label></p>
 		<div class="nekoko-profile-image-field">
@@ -94,7 +95,6 @@ delete_transient( 'nekoko_profile_password_error_' . $id );
 			<span class="nekoko-form__help">Dozvoljene su JPG, PNG i WebP slike.</span>
 		</div>
 		<p><label>U par reči o meni<textarea name="nekoko_profile_bio" maxlength="500"><?php echo esc_textarea( get_user_meta( $id, 'nekoko_profile_bio', true ) ); ?></textarea></label></p>
-		<p><label><input type="checkbox" name="nekoko_show_phone" value="1" <?php checked( get_user_meta( $id, 'nekoko_show_phone', true ), '1' ); ?>> Dozvoljavam da se moj telefon vidi na mom profilu</label></p>
 		<button type="submit">Sačuvajte profil</button>
 	</form>
 
