@@ -20,6 +20,7 @@ require_once __DIR__ . '/includes/header-fields.php';
 require_once __DIR__ . '/includes/home-hero-block.php';
 require_once __DIR__ . '/includes/search-block.php';
 require_once __DIR__ . '/includes/featured-offers-block.php';
+require_once __DIR__ . '/includes/top-offers-block.php';
 require_once __DIR__ . '/includes/form-helpers.php';
 require_once __DIR__ . '/includes/frontend-fields.php';
 require_once __DIR__ . '/includes/form-pages.php';
