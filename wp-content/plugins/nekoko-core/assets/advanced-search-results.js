@@ -10,6 +10,51 @@ document.addEventListener('DOMContentLoaded', function () {
 		var options = Array.prototype.slice.call(category.options).slice(1).map(function (option) {
 			return { value: option.value, text: option.text, tip: option.dataset.tip };
 		});
+		var masonryTimer;
+
+		function masonryColumns() {
+			if (window.matchMedia('(max-width: 34rem)').matches) return 1;
+			if (window.matchMedia('(max-width: 52rem)').matches) return 2;
+			return 3;
+		}
+
+		function layoutMasonry() {
+			var cards = Array.prototype.slice.call(target.querySelectorAll('.nekoko-advanced-results__card'));
+			if (!cards.length) {
+				target.classList.remove('is-masonry');
+				target.style.height = '';
+				return;
+			}
+			var columns = masonryColumns();
+			var gap = 20;
+			var width = target.clientWidth;
+			if (!width) return;
+			var columnWidth = (width - gap * (columns - 1)) / columns;
+			var heights = Array(columns).fill(0);
+
+			target.classList.add('is-masonry');
+			target.style.height = '';
+			cards.forEach(function (card, index) {
+				var column = index < columns ? index : heights.indexOf(Math.min.apply(Math, heights));
+				card.style.width = columnWidth + 'px';
+				card.style.left = (column * (columnWidth + gap)) + 'px';
+				card.style.top = heights[column] + 'px';
+				heights[column] += card.offsetHeight + gap;
+			});
+			target.style.height = Math.max.apply(Math, heights) - gap + 'px';
+		}
+
+		function refreshMasonry() {
+			clearTimeout(masonryTimer);
+			masonryTimer = setTimeout(layoutMasonry, 30);
+		}
+
+		function watchMasonryImages() {
+			target.querySelectorAll('img').forEach(function (image) {
+				if (!image.complete) image.addEventListener('load', refreshMasonry, { once: true });
+			});
+			refreshMasonry();
+		}
 
 		function selectedType() {
 			var checked = form.querySelector('[data-nekoko-advanced-type]:checked');
@@ -72,6 +117,7 @@ document.addEventListener('DOMContentLoaded', function () {
 					}
 					target.innerHTML = response.data.html;
 					count.textContent = response.data.count + ' oglasa';
+					watchMasonryImages();
 				})
 				.catch(function () {
 					target.innerHTML = '<p class="nekoko-advanced-results__empty">Rezultati trenutno nisu dostupni.</p>';
@@ -140,5 +186,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		populateCategory(true);
 		toggleTypeFields();
+		watchMasonryImages();
+		window.addEventListener('resize', refreshMasonry);
 	});
 });
