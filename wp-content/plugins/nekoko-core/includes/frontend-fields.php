@@ -41,7 +41,6 @@ function nekoko_core_register_frontend_fields() {
 		array( 'key' => 'field_nekoko_listing_price', 'label' => 'Cena', 'name' => 'nekoko_listing_price', 'type' => 'number', 'conditional_logic' => array( array( array( 'field' => 'field_nekoko_listing_price_agreed', 'operator' => '!=', 'value' => '1' ) ) ) ),
 		array( 'key' => 'field_nekoko_listing_duration', 'label' => 'Trajanje', 'name' => 'nekoko_listing_duration', 'type' => 'text', 'instructions' => 'Koristi se za Potražnju, npr. „2 sata“, „jedan dan“ ili „vikendom“.' ),
 		array( 'key' => 'field_nekoko_listing_duration_na', 'label' => 'Trajanje nije primenljivo', 'name' => 'nekoko_listing_duration_na', 'type' => 'true_false', 'ui' => 1, 'instructions' => 'Koristite za proizvode ili oglase kod kojih trajanje nije važno.' ),
-		array( 'key' => 'field_nekoko_listing_currency', 'label' => 'Valuta', 'name' => 'nekoko_listing_currency', 'type' => 'select', 'choices' => array( 'RSD' => 'RSD', 'EUR' => 'EUR' ), 'default_value' => 'RSD', 'return_format' => 'value' ),
 		array( 'key' => 'field_nekoko_listing_gallery', 'label' => 'Galerija', 'name' => 'nekoko_listing_gallery', 'type' => 'gallery', 'return_format' => 'id', 'library' => 'uploadedTo', 'max' => 6, 'mime_types' => 'jpg,jpeg,png,webp' ),
 	) ) );
 	acf_add_local_field_group( array( 'key' => 'group_nekoko_user_profile', 'title' => 'Korisnik – profil', 'active' => true, 'location' => array( array( array( 'param' => 'user_role', 'operator' => '==', 'value' => 'oglasivac' ) ) ), 'fields' => array(

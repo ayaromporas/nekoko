@@ -36,7 +36,6 @@ delete_transient( 'nekoko_profile_password_error_' . $id );
 ?>
 <section class="nekoko-dashboard">
 	<h2>Moj profil</h2>
-	<?php echo nekoko_core_dashboard_nav(); ?>
 	<p class="nekoko-public-profile-link"><a class="button" href="<?php echo esc_url( get_author_posts_url( $id ) ); ?>">Pogledaj javni profil</a></p>
 	<?php
 	if ( $notice ) {

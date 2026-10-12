@@ -26,7 +26,17 @@
 		echo $nekoko_tags && ! is_wp_error( $nekoko_tags ) ? wp_kses_post( $nekoko_tags ) : 'Nije navedeno';
 	?></dd>
 	<dt>Autor</dt>
-	<dd><a href="<?php echo esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ); ?>"><?php echo esc_html( get_the_author() ); ?></a></dd>
+	<dd><?php
+		$nekoko_author_id = (int) get_the_author_meta( 'ID' );
+		$nekoko_author_image = absint( get_user_meta( $nekoko_author_id, 'nekoko_profile_image', true ) );
+	?><a class="nekoko-listing-author" href="<?php echo esc_url( get_author_posts_url( $nekoko_author_id ) ); ?>">
+		<?php if ( $nekoko_author_image ) : ?>
+			<?php echo wp_get_attachment_image( $nekoko_author_image, 'thumbnail', false, array( 'class' => 'nekoko-listing-author__image', 'alt' => '' ) ); ?>
+		<?php else : ?>
+			<?php echo get_avatar( $nekoko_author_id, 48, '', '', array( 'class' => 'nekoko-listing-author__image' ) ); ?>
+		<?php endif; ?>
+		<span><?php echo esc_html( get_the_author() ); ?></span>
+	</a></dd>
 	<dt>Datum objave</dt>
 	<dd><time datetime="<?php echo esc_attr( get_the_date( DATE_W3C ) ); ?>"><?php echo esc_html( get_the_date() ); ?></time></dd>
 </dl>

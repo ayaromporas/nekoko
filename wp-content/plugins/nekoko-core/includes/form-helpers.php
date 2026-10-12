@@ -112,6 +112,14 @@ function nekoko_core_listing_image_ids( $post_id ) {
 	return array_values( array_unique( array_filter( $ids ) ) );
 }
 
+/** Returns the editor-provided short description, with a safe legacy fallback. */
+function nekoko_core_listing_excerpt( $post_id, $words = 22 ) {
+	$excerpt = trim( (string) get_post_field( 'post_excerpt', $post_id ) );
+	if ( '' !== $excerpt ) { return $excerpt; }
+	$content = wp_strip_all_tags( (string) get_post_field( 'post_content', $post_id ) );
+	return wp_trim_words( $content, $words, '…' );
+}
+
 function nekoko_core_mail_failure_log( $error ) {
 	if ( $error instanceof WP_Error ) { error_log( 'NekoKO mail failure: ' . sanitize_text_field( $error->get_error_message() ) ); }
 }

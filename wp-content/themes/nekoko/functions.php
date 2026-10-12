@@ -199,6 +199,11 @@ function nekoko_enqueue_assets() {
 	// The header uses the same named Button styles even on pages without Button blocks.
 	wp_enqueue_style( 'nekoko-button-styles', get_theme_file_uri( 'assets/css/button-styles.css' ), array( 'nekoko-style' ), filemtime( get_theme_file_path( 'assets/css/button-styles.css' ) ) );
 	wp_enqueue_script( 'nekoko-theme', get_theme_file_uri( 'assets/js/theme.js' ), array(), filemtime( get_theme_file_path( 'assets/js/theme.js' ) ), true );
+	if ( is_singular( 'oglas' ) ) {
+		wp_enqueue_style( 'nekoko-single-oglas', get_theme_file_uri( 'assets/css/single-oglas.css' ), array( 'nekoko-style' ), filemtime( get_theme_file_path( 'assets/css/single-oglas.css' ) ) );
+		wp_enqueue_script( 'nekoko-single-oglas', get_theme_file_uri( 'assets/js/single-oglas.js' ), array(), filemtime( get_theme_file_path( 'assets/js/single-oglas.js' ) ), true );
+		wp_localize_script( 'nekoko-single-oglas', 'nekokoListing', array( 'ajaxUrl' => admin_url( 'admin-ajax.php' ), 'nonce' => wp_create_nonce( 'nekoko_listing_interaction' ), 'listingId' => get_queried_object_id() ) );
+	}
 	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) { wp_enqueue_script( 'comment-reply' ); }
 }
 add_action( 'wp_enqueue_scripts', 'nekoko_enqueue_assets' );
@@ -242,21 +247,80 @@ function nekoko_header_link( $name, $fallback ) {
 	return array( 'url' => $url ? $url : $fallback, 'target' => $url && isset( $value['target'] ) && '_blank' === $value['target'] ? '_blank' : '_self' );
 }
 
-/** Authentication state and the nonce-protected logout URL are resolved per request. */
 function nekoko_header_actions() {
 	$post_ad = nekoko_header_link( 'header_post_ad_link', home_url( '/postavite-oglas/' ) );
 	$post_ad['label'] = nekoko_header_label( 'header_post_ad_label', 'Postavite oglas' );
 	$post_ad['style'] = 'is-style-nekoko-yellow';
 
 	if ( is_user_logged_in() ) {
-		$redirect = nekoko_header_option( 'header_logout_redirect' );
-		$redirect = is_string( $redirect ) ? esc_url_raw( $redirect, array( 'http', 'https' ) ) : '';
-		$redirect = $redirect ? wp_validate_redirect( $redirect, home_url( '/' ) ) : home_url( '/' );
-		$account = array( 'url' => wp_logout_url( $redirect ), 'target' => '_self', 'label' => nekoko_header_label( 'header_logout_label', 'Odjava' ) );
-	} else {
-		$account = nekoko_header_link( 'header_login_link', home_url( '/prijava/' ) );
-		$account['label'] = nekoko_header_label( 'header_login_label', 'Prijava' );
+		return array( $post_ad );
 	}
-	$account['style'] = 'is-style-nekoko-white-blue';
-	return array( $post_ad, $account );
+
+	$login = nekoko_header_link( 'header_login_link', home_url( '/prijava/' ) );
+	$login['label'] = nekoko_header_label( 'header_login_label', 'Prijava' );
+	$login['style'] = 'is-style-nekoko-white-blue';
+	return array( $post_ad, $login );
 }
+
+/** Returns the site-managed "Moj nalog" menu and the secure logout link. */
+function nekoko_header_account_menu() {
+	$items = wp_get_nav_menu_items( 82 );
+	$items = is_array( $items ) ? $items : array();
+	$icon_by_title = array(
+		'moj-profil'         => 'profile',
+		'moji-oglasi'        => 'listings',
+		'postavite-oglas'    => 'post-ad',
+		'postavi-novi-oglas' => 'post-ad',
+		'sacuvani-oglasi'    => 'saved',
+		'podesavanje-naloga' => 'settings',
+		'podesavanja-naloga' => 'settings',
+	);
+	$priority = array( 'profile', 'listings', 'post-ad', 'saved', 'settings' );
+	$menu_items = array();
+	foreach ( $items as $item ) {
+		$key = sanitize_title( $item->title );
+		$icon = isset( $icon_by_title[ $key ] ) ? $icon_by_title[ $key ] : 'profile';
+		$order = array_search( $icon, $priority, true );
+		$menu_items[] = array(
+			'label' => $item->title,
+			'url'   => $item->url,
+			'icon'  => $icon,
+			'order' => false === $order ? 99 : $order,
+		);
+	}
+	usort( $menu_items, static function( $first, $second ) {
+		return $first['order'] <=> $second['order'];
+	} );
+
+	$redirect = nekoko_header_option( 'header_logout_redirect' );
+	$redirect = is_string( $redirect ) ? esc_url_raw( $redirect, array( 'http', 'https' ) ) : '';
+	$redirect = $redirect ? wp_validate_redirect( $redirect, home_url( '/' ) ) : home_url( '/' );
+
+	return array(
+		'items'        => $menu_items,
+		'profile_url'  => ! empty( $menu_items[0]['url'] ) ? $menu_items[0]['url'] : home_url( '/moj-profil/' ),
+		'logout_url'   => wp_logout_url( $redirect ),
+		'logout_label' => nekoko_header_label( 'header_logout_label', 'Odjava' ),
+	);
+}
+
+/** Inline outline icons used only by the account navigation. */
+function nekoko_header_account_icon( $name ) {
+	$paths = array(
+		'profile'   => '<path d="M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>',
+		'listings'  => '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/>',
+		'post-ad'   => '<path d="M12 5v14M5 12h14"/>',
+		'saved'     => '<path d="M20.8 8.5c0 5.4-8.8 10.3-8.8 10.3S3.2 13.9 3.2 8.5A4.8 4.8 0 0 1 12 5.8a4.8 4.8 0 0 1 8.8 2.7Z"/>',
+		'settings'  => '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.3 2.3-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.2h-3.2v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1L6 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H4.7v-3.2h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L6 7.8 8.3 5.5l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5v-.2h3.2v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1 2.3 2.3-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.2V14h-.2a1.7 1.7 0 0 0-1.5 1Z"/>',
+		'logout'    => '<path d="M14 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8M13 16l4-4-4-4M8 12h9"/>',
+	);
+	$path = isset( $paths[ $name ] ) ? $paths[ $name ] : $paths['profile'];
+	return '<svg class="header-account__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' . $path . '</svg>';
+}
+
+/** Use a white-backed, versioned SVG so favicon cache does not hide changes. */
+function nekoko_version_favicon_url( $url ) {
+	$favicon_path = get_theme_file_path( 'assets/images/favicon-white.svg' );
+	return add_query_arg( 'ver', (string) filemtime( $favicon_path ), get_theme_file_uri( 'assets/images/favicon-white.svg' ) );
+}
+add_filter( 'get_site_icon_url', 'nekoko_version_favicon_url' );

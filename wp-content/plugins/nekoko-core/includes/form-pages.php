@@ -8,12 +8,13 @@ function nekoko_core_frontend_pages() {
 		'potvrda-emaila' => array( 'title' => 'Potvrda emaila', 'content' => '[nekoko_verify_email]' ),
 		'postavite-oglas' => array( 'title' => 'Postavite oglas', 'content' => '[nekoko_listing_form]' ),
 		'moji-oglasi' => array( 'title' => 'Moji oglasi', 'content' => '[nekoko_user_listings]' ),
+		'sacuvani-oglasi' => array( 'title' => 'Sačuvani oglasi', 'content' => '[nekoko_saved_listings]' ),
 		'moj-profil' => array( 'title' => 'Moj profil', 'content' => '[nekoko_profile_form]' ),
 	);
 }
 
 function nekoko_core_maybe_setup_frontend_pages() {
-	$version = '2';
+	$version = '3';
 	if ( get_option( 'nekoko_frontend_pages_version' ) === $version ) { return; }
 	foreach ( nekoko_core_frontend_pages() as $slug => $page ) {
 		$existing = get_page_by_path( $slug, OBJECT, 'page' );
@@ -34,6 +35,7 @@ function nekoko_core_frontend_assets() {
 	if ( is_admin() ) { return; }
 	wp_enqueue_style( 'nekoko-core-forms', plugins_url( 'assets/css/forms.css', NEKOKO_CORE_FILE ), array(), filemtime( dirname( NEKOKO_CORE_FILE ) . '/assets/css/forms.css' ) );
 	wp_enqueue_script( 'nekoko-core-forms', plugins_url( 'assets/js/forms.js', NEKOKO_CORE_FILE ), array(), filemtime( dirname( NEKOKO_CORE_FILE ) . '/assets/js/forms.js' ), true );
+	if ( is_page( 'sacuvani-oglasi' ) ) { wp_enqueue_style( 'nekoko-saved-listings', plugins_url( 'assets/saved-listings.css', NEKOKO_CORE_FILE ), array(), filemtime( dirname( NEKOKO_CORE_FILE ) . '/assets/saved-listings.css' ) ); }
 }
 add_action( 'wp_enqueue_scripts', 'nekoko_core_frontend_assets' );
 
