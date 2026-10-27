@@ -56,7 +56,8 @@ $nekoko_icon = static function( $name ) {
 		if ( $root ) { $similar_args['tax_query'] = array( array( 'taxonomy' => 'kategorija_oglasa', 'field' => 'term_id', 'terms' => array( $root->term_id ), 'include_children' => true ) ); }
 		$similar = new WP_Query( $similar_args );
 	?>
-	<article id="post-<?php the_ID(); ?>" <?php post_class( 'nekoko-listing-single' ); ?> data-listing-id="<?php echo esc_attr( $listing_id ); ?>">
+	<article id="post-<?php the_ID(); ?>" <?php post_class( 'nekoko-listing-single' . ( $is_demand ? ' nekoko-listing-single--demand' : '' ) ); ?> data-listing-id="<?php echo esc_attr( $listing_id ); ?>">
+		<?php echo function_exists( 'nekoko_core_test_listing_badge' ) ? nekoko_core_test_listing_badge( $listing_id, 'single' ) : ''; ?>
 		<nav class="nekoko-listing-single__breadcrumbs" aria-label="Putanja">
 			<a href="<?php echo esc_url( home_url( '/' ) ); ?>">Početna</a><span aria-hidden="true">›</span>
 			<?php if ( $root ) : ?><a href="<?php echo esc_url( get_term_link( $root ) ); ?>"><?php echo esc_html( $root->name ); ?></a><span aria-hidden="true">›</span><?php endif; ?>

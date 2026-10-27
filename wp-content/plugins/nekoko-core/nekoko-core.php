@@ -40,6 +40,7 @@ require_once __DIR__ . '/includes/authentication.php';
 require_once __DIR__ . '/includes/registration.php';
 require_once __DIR__ . '/includes/listing-permissions.php';
 require_once __DIR__ . '/includes/listing-form.php';
+require_once __DIR__ . '/includes/test-listings.php';
 require_once __DIR__ . '/includes/listing-interactions.php';
 require_once __DIR__ . '/includes/user-dashboard.php';
 require_once __DIR__ . '/includes/profile.php';

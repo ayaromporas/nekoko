@@ -2,6 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 ?>
 <section class="nekoko-saved-listings">
+	<p class="nekoko-saved-listings__status" data-saved-listing-status aria-live="polite" hidden></p>
 	<?php if ( $listings ) : ?><div class="nekoko-saved-listings__grid">
 		<?php foreach ( $listings as $listing ) :
 			$id = $listing->ID;
@@ -17,10 +18,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 			$excerpt = function_exists( 'nekoko_core_listing_excerpt' ) ? nekoko_core_listing_excerpt( $id ) : $listing->post_excerpt;
 		?>
 			<article class="nekoko-saved-listings__card">
+				<button class="nekoko-saved-listings__remove" type="button" data-saved-listing-remove data-listing-id="<?php echo esc_attr( $id ); ?>" aria-label="<?php echo esc_attr( 'Ukloni oglas iz liste sacuvanih' ); ?>"><span aria-hidden="true">&times;</span></button>
 				<a class="nekoko-saved-listings__card-link" href="<?php echo esc_url( get_permalink( $listing ) ); ?>" aria-label="<?php echo esc_attr( $listing->post_title ); ?>"></a>
 				<div class="nekoko-saved-listings__image">
 					<?php if ( has_post_thumbnail( $listing ) ) { echo get_the_post_thumbnail( $listing, 'medium_large' ); } else { ?><span aria-hidden="true">⌕</span><?php } ?>
 					<?php if ( $root ) : ?><span class="nekoko-saved-listings__ribbon<?php echo $demand ? ' nekoko-saved-listings__ribbon--demand' : ''; ?>"><?php echo esc_html( $root->name ); ?></span><?php endif; ?>
+					<?php echo function_exists( 'nekoko_core_test_listing_badge' ) ? nekoko_core_test_listing_badge( $id ) : ''; ?>
 				</div>
 				<div class="nekoko-saved-listings__body">
 					<?php if ( $category_names ) : ?><p class="nekoko-saved-listings__category"><?php echo esc_html( implode( ' · ', $category_names ) ); ?></p><?php endif; ?>

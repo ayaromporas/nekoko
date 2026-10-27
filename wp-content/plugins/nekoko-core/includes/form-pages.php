@@ -34,8 +34,13 @@ function nekoko_core_template( $name, $args = array() ) {
 function nekoko_core_frontend_assets() {
 	if ( is_admin() ) { return; }
 	wp_enqueue_style( 'nekoko-core-forms', plugins_url( 'assets/css/forms.css', NEKOKO_CORE_FILE ), array(), filemtime( dirname( NEKOKO_CORE_FILE ) . '/assets/css/forms.css' ) );
+	wp_enqueue_style( 'nekoko-test-listing-badges', plugins_url( 'assets/test-listings.css', NEKOKO_CORE_FILE ), array(), filemtime( dirname( NEKOKO_CORE_FILE ) . '/assets/test-listings.css' ) );
 	wp_enqueue_script( 'nekoko-core-forms', plugins_url( 'assets/js/forms.js', NEKOKO_CORE_FILE ), array(), filemtime( dirname( NEKOKO_CORE_FILE ) . '/assets/js/forms.js' ), true );
-	if ( is_page( 'sacuvani-oglasi' ) ) { wp_enqueue_style( 'nekoko-saved-listings', plugins_url( 'assets/saved-listings.css', NEKOKO_CORE_FILE ), array(), filemtime( dirname( NEKOKO_CORE_FILE ) . '/assets/saved-listings.css' ) ); }
+	if ( is_page( 'sacuvani-oglasi' ) ) {
+		wp_enqueue_style( 'nekoko-saved-listings', plugins_url( 'assets/saved-listings.css', NEKOKO_CORE_FILE ), array(), filemtime( dirname( NEKOKO_CORE_FILE ) . '/assets/saved-listings.css' ) );
+		wp_enqueue_script( 'nekoko-saved-listings-script', plugins_url( 'assets/js/saved-listings.js', NEKOKO_CORE_FILE ), array(), filemtime( dirname( NEKOKO_CORE_FILE ) . '/assets/js/saved-listings.js' ), true );
+		wp_localize_script( 'nekoko-saved-listings-script', 'nekokoSavedListings', array( 'ajaxUrl' => admin_url( 'admin-ajax.php' ), 'nonce' => wp_create_nonce( 'nekoko_listing_interaction' ) ) );
+	}
 }
 add_action( 'wp_enqueue_scripts', 'nekoko_core_frontend_assets' );
 

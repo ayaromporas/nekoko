@@ -112,6 +112,7 @@ function nekoko_core_advanced_search_results_html( $params, $empty ) {
 		<article class="nekoko-advanced-results__card">
 			<a class="nekoko-advanced-results__card-link" href="<?php the_permalink(); ?>" aria-label="<?php echo esc_attr( get_the_title() ); ?>"></a>
 			<div class="nekoko-advanced-results__image">
+				<?php echo function_exists( 'nekoko_core_test_listing_badge' ) ? nekoko_core_test_listing_badge( $id ) : ''; ?>
 				<?php if ( has_post_thumbnail() ) { the_post_thumbnail( 'medium_large' ); } else { ?><span aria-hidden="true">⌕</span><?php } ?>
 			</div>
 			<div class="nekoko-advanced-results__card-body">

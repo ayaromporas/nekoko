@@ -394,3 +394,39 @@ input[type="submit"]:focus,
 	.header-account__pointer { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .header-account__dropdown, .header-account__chevron { transition: none; } }
+
+/* Keep every icon in the header controls optically centered and spaced. */
+.header-search { align-items: stretch; }
+.header-search__input { line-height: 1.2; }
+.header-search__submit { align-self: stretch; min-width: 2.875rem; padding: 0 !important; line-height: 0; }
+.header-search__submit svg { display: block; flex: 0 0 auto; margin: 0; }
+.header-actions .wp-block-button__link,
+.header-account__trigger,
+.header-account__item a,
+.header-account__logout { line-height: 1.2; }
+.header-account__trigger .header-account__icon,
+.header-account__trigger .header-account__chevron,
+.header-account__item .header-account__icon,
+.header-account__logout .header-account__icon,
+.menu-toggle svg,
+.footer-social__item svg { display: block; flex: 0 0 auto; margin: 0; }
+
+/* The search icon has a fixed visual center inside its square submit button. */
+.header-search__submit { position: relative; }
+.header-search__submit svg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+/* Use one inset chevron for all public-facing select controls. */
+.site-main select,
+.nekoko-advanced-results select,
+.nekoko-search-block__select,
+.nekoko-offer-hero__form select,
+.nekoko-form select {
+	-webkit-appearance: none;
+	appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23004682' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+	background-repeat: no-repeat !important;
+	background-size: 1rem 1rem !important;
+	background-position: right 1rem center !important;
+	padding-right: 3.15rem !important;
+}
+.header-account__trigger .header-account__chevron { margin-right: .15rem; }
