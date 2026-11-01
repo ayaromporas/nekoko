@@ -40,6 +40,8 @@ $nekoko_icon = static function( $name ) {
 		$author_name = trim( get_user_meta( $author_id, 'first_name', true ) . ' ' . get_user_meta( $author_id, 'last_name', true ) );
 		$author_name = $author_name ?: ( $author ? $author->display_name : 'NekoKO korisnik' );
 		$author_image = absint( get_user_meta( $author_id, 'nekoko_profile_image', true ) );
+		$author_email_verified = function_exists( 'nekoko_core_is_verified_user' ) && nekoko_core_is_verified_user( $author_id );
+		$verified_email_label = function_exists( 'nekoko_core_option' ) ? nekoko_core_option( 'nekoko_verified_email_label', 'Potvrđen email' ) : 'Potvrđen email';
 		$phone = (string) get_user_meta( $author_id, 'nekoko_phone', true );
 		$location = (string) get_post_meta( $listing_id, 'nekoko_listing_location', true );
 		$duration = (string) get_post_meta( $listing_id, 'nekoko_listing_duration', true );
@@ -49,9 +51,19 @@ $nekoko_icon = static function( $name ) {
 		$is_demand = $root && 'potraznja' === $root->slug;
 		$price_label = $is_demand ? ( $duration_na ? 'Trajanje nije primenljivo' : ( $duration ? 'Trajanje: ' . $duration : 'Po dogovoru' ) ) : ( $agreed || '' === $price ? 'Po dogovoru' : number_format_i18n( (float) $price, 0 ) . ' RSD' );
 		$excerpt = function_exists( 'nekoko_core_listing_excerpt' ) ? nekoko_core_listing_excerpt( $listing_id, 26 ) : get_the_excerpt();
+		$location_search_url = $location ? add_query_arg( 'grad', $location, function_exists( 'nekoko_core_page_url' ) ? nekoko_core_page_url( 'napredna-pretraga' ) : home_url( '/napredna-pretraga/' ) ) : '';
 		$saved_ids = function_exists( 'nekoko_core_saved_listing_ids' ) && is_user_logged_in() ? nekoko_core_saved_listing_ids() : array();
 		$is_saved = in_array( $listing_id, $saved_ids, true );
 		$tags = get_the_terms( $listing_id, 'oglas_tag' );
+		$viewer_id = get_current_user_id();
+		$reviews = function_exists( 'nekoko_core_listing_reviews' ) ? nekoko_core_listing_reviews( $listing_id ) : array();
+		$existing_collaboration = $viewer_id && function_exists( 'nekoko_core_collaboration' ) ? nekoko_core_collaboration( $listing_id, $viewer_id, $author_id ) : false;
+		$review_collaboration = $existing_collaboration && 'confirmed' === $existing_collaboration->status ? $existing_collaboration : false;
+		$has_left_review = $review_collaboration && nekoko_core_review_exists( $review_collaboration->id );
+		$can_leave_review = $review_collaboration && $viewer_id !== $author_id && ! $has_left_review;
+		$show_review_form = $can_leave_review && ! empty( $_GET['nekoko_review_form'] );
+		$review_notice = $viewer_id ? get_transient( 'nekoko_review_notice_' . $viewer_id ) : false;
+		if ( $viewer_id ) { delete_transient( 'nekoko_review_notice_' . $viewer_id ); }
 		$similar_args = array( 'post_type' => 'oglas', 'post_status' => 'publish', 'posts_per_page' => 3, 'post__not_in' => array( $listing_id ), 'no_found_rows' => true );
 		if ( $root ) { $similar_args['tax_query'] = array( array( 'taxonomy' => 'kategorija_oglasa', 'field' => 'term_id', 'terms' => array( $root->term_id ), 'include_children' => true ) ); }
 		$similar = new WP_Query( $similar_args );
@@ -71,7 +83,7 @@ $nekoko_icon = static function( $name ) {
 				<div class="nekoko-listing-single__labels">
 					<?php if ( $root ) : ?><a class="nekoko-listing-single__label nekoko-listing-single__label--<?php echo esc_attr( $root->slug ); ?>" href="<?php echo esc_url( get_term_link( $root ) ); ?>"><?php echo esc_html( $root->name ); ?></a><?php endif; ?>
 					<?php foreach ( $direct_categories as $category ) : ?><a class="nekoko-listing-single__label nekoko-listing-single__label--category" href="<?php echo esc_url( get_term_link( $category ) ); ?>"><?php echo esc_html( $category->name ); ?></a><?php endforeach; ?>
-					<?php if ( $location ) : ?><span class="nekoko-listing-single__location"><?php echo $nekoko_icon( 'pin' ); ?><?php echo esc_html( $location ); ?></span><?php endif; ?>
+					<?php if ( $location ) : ?><a class="nekoko-listing-single__location" href="<?php echo esc_url( $location_search_url ); ?>" aria-label="<?php echo esc_attr( 'Pretraži oglase za grad: ' . $location ); ?>"><?php echo $nekoko_icon( 'pin' ); ?><?php echo esc_html( $location ); ?></a><?php endif; ?>
 				</div>
 			</div>
 			<div class="nekoko-listing-single__quick-actions">
@@ -116,7 +128,7 @@ $nekoko_icon = static function( $name ) {
 					<p class="nekoko-listing-sidecard__title">Oglas postavio</p>
 					<a class="nekoko-listing-author-card__person" href="<?php echo esc_url( get_author_posts_url( $author_id ) ); ?>">
 						<?php if ( $author_image ) { echo wp_get_attachment_image( $author_image, 'thumbnail', false, array( 'alt' => '' ) ); } else { echo get_avatar( $author_id, 96, '', '', array( 'alt' => '' ) ); } ?>
-						<span><strong><?php echo esc_html( $author_name ); ?></strong><small>Verifikovan korisnik</small><small>Član od <?php echo esc_html( date_i18n( 'Y.', strtotime( $author->user_registered ?? '' ) ) ); ?></small></span>
+						<span><strong><?php echo esc_html( $author_name ); ?></strong><?php if ( $author_email_verified ) : ?><small class="nekoko-listing-author-card__verified-email"><?php echo esc_html( $verified_email_label ); ?></small><?php endif; ?><small class="nekoko-listing-author-card__member-since">Član od <?php echo esc_html( date_i18n( 'Y.', strtotime( $author->user_registered ?? '' ) ) ); ?></small></span>
 					</a>
 					<a class="nekoko-listing-author-card__all" href="<?php echo esc_url( get_author_posts_url( $author_id ) ); ?>">Svi oglasi ovog korisnika</a>
 				</section>
@@ -124,7 +136,7 @@ $nekoko_icon = static function( $name ) {
 				<section class="nekoko-listing-sidecard nekoko-listing-details">
 					<h2>Detalji oglasa</h2>
 					<dl>
-						<?php if ( $location ) : ?><div><dt><?php echo $nekoko_icon( 'pin' ); ?>Lokacija</dt><dd><?php echo esc_html( $location ); ?></dd></div><?php endif; ?>
+						<?php if ( $location ) : ?><div><dt><?php echo $nekoko_icon( 'pin' ); ?>Lokacija</dt><dd><a href="<?php echo esc_url( $location_search_url ); ?>"><?php echo esc_html( $location ); ?></a></dd></div><?php endif; ?>
 						<?php if ( $root ) : ?><div><dt><?php echo $nekoko_icon( 'tag' ); ?>Tip oglasa</dt><dd><?php echo esc_html( $root->name ); ?></dd></div><?php endif; ?>
 						<?php if ( $leaf_terms ) : ?><div><dt><?php echo $nekoko_icon( 'grid' ); ?>Kategorija</dt><dd><?php echo esc_html( implode( ' · ', wp_list_pluck( $leaf_terms, 'name' ) ) ); ?></dd></div><?php endif; ?>
 						<div><dt><?php echo $nekoko_icon( 'calendar' ); ?>Objavljeno</dt><dd><time datetime="<?php echo esc_attr( get_the_date( DATE_W3C ) ); ?>"><?php echo esc_html( get_the_date( 'j. F Y.' ) ); ?></time></dd></div>
@@ -132,6 +144,39 @@ $nekoko_icon = static function( $name ) {
 				</section>
 			</aside>
 		</div>
+
+		<section class="nekoko-listing-reviews" aria-labelledby="nekoko-listing-reviews-title">
+			<h2 id="nekoko-listing-reviews-title">Recenzije</h2>
+			<?php if ( is_array( $review_notice ) ) : ?><p class="nekoko-listing-reviews__notice nekoko-listing-reviews__notice--<?php echo esc_attr( $review_notice['type'] ); ?>"><?php echo esc_html( $review_notice['message'] ); ?></p><?php endif; ?>
+			<?php if ( ! is_user_logged_in() ) : ?>
+				<p class="nekoko-listing-reviews__login">Samo ulogovani korisnici mogu postaviti recenzije.</p>
+			<?php elseif ( $viewer_id !== $author_id && ! $show_review_form && $can_leave_review ) : ?>
+				<form class="nekoko-listing-reviews__start" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"><?php wp_nonce_field( 'nekoko_start_review_' . $listing_id ); ?><input type="hidden" name="action" value="nekoko_start_review"><input type="hidden" name="listing_id" value="<?php echo esc_attr( $listing_id ); ?>"><button type="submit">Postavi recenziju</button></form>
+			<?php elseif ( $viewer_id !== $author_id && $has_left_review ) : ?>
+				<p class="nekoko-listing-reviews__pending">Već ste ostavili recenziju za ovu potvrđenu saradnju.</p>
+			<?php elseif ( $viewer_id !== $author_id && ! $show_review_form && ! $existing_collaboration ) : ?>
+				<form class="nekoko-listing-reviews__start" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"><p>Pre objave recenzije potrebno je potvrditi saradnju za ovaj oglas.</p><?php wp_nonce_field( 'nekoko_start_review_' . $listing_id ); ?><input type="hidden" name="action" value="nekoko_start_review"><input type="hidden" name="listing_id" value="<?php echo esc_attr( $listing_id ); ?>"><button type="submit">Postavi recenziju</button></form>
+			<?php elseif ( $viewer_id !== $author_id && ! $show_review_form && $existing_collaboration ) : ?>
+				<p class="nekoko-listing-reviews__pending">Zahtev za potvrdu saradnje je poslat. Recenziju ćete moći da postavite kada ga pružalac usluge potvrdi.</p>
+			<?php endif; ?>
+			<?php if ( $show_review_form ) : ?>
+				<form class="nekoko-listing-review-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<h3>Ostavite recenziju za <?php echo esc_html( $author_name ); ?></h3>
+					<?php wp_nonce_field( 'nekoko_submit_review_' . $listing_id ); ?><input type="hidden" name="action" value="nekoko_submit_review"><input type="hidden" name="listing_id" value="<?php echo esc_attr( $listing_id ); ?>">
+					<fieldset><legend>Ocena</legend><div class="nekoko-listing-review-form__rating"><?php for ( $rating = 5; $rating >= 1; $rating-- ) : ?><label><input type="radio" name="rating" value="<?php echo esc_attr( $rating ); ?>" required><span aria-hidden="true">★</span><span class="screen-reader-text"><?php echo esc_html( $rating ); ?> zvezdica</span></label><?php endfor; ?></div></fieldset>
+					<label>Vaša recenzija<textarea name="review_text" required minlength="10" maxlength="2000" placeholder="Opišite svoje iskustvo saradnje."></textarea></label>
+					<button type="submit">Objavi recenziju</button>
+				</form>
+			<?php endif; ?>
+			<?php if ( $reviews ) : ?><div class="nekoko-listing-reviews__list">
+				<?php foreach ( $reviews as $review ) : $review_image = absint( get_user_meta( $review->reviewer_id, 'nekoko_profile_image', true ) ); ?>
+					<article class="nekoko-listing-review">
+						<div class="nekoko-listing-review__author"><?php if ( $review_image ) { echo wp_get_attachment_image( $review_image, 'thumbnail', false, array( 'alt' => '' ) ); } else { echo get_avatar( $review->reviewer_id, 48, '', '', array( 'alt' => '' ) ); } ?><div><strong><?php echo esc_html( $review->display_name ); ?></strong><time datetime="<?php echo esc_attr( mysql2date( DATE_W3C, $review->created_at ) ); ?>"><?php echo esc_html( date_i18n( 'j. F Y.', strtotime( $review->created_at ) ) ); ?></time></div><span class="nekoko-listing-review__stars" aria-label="<?php echo esc_attr( $review->rating . ' od 5 zvezdica' ); ?>"><?php echo esc_html( str_repeat( '★', (int) $review->rating ) . str_repeat( '☆', 5 - (int) $review->rating ) ); ?></span></div>
+						<p><?php echo nl2br( esc_html( $review->review_text ) ); ?></p>
+					</article>
+				<?php endforeach; ?>
+			</div><?php else : ?><p class="nekoko-listing-reviews__empty">Još nema recenzija za ovaj oglas.</p><?php endif; ?>
+		</section>
 
 		<?php if ( $similar->have_posts() ) : ?><section class="nekoko-listing-similar"><div class="nekoko-listing-similar__heading"><h2>Slični oglasi</h2><?php if ( $root ) : ?><a href="<?php echo esc_url( get_term_link( $root ) ); ?>">Pogledaj sve oglase <span aria-hidden="true">→</span></a><?php endif; ?></div><div class="nekoko-listing-similar__grid">
 			<?php while ( $similar->have_posts() ) : $similar->the_post(); $similar_id = get_the_ID(); $similar_root = nekoko_core_oglas_classification( $similar_id ); $similar_price = get_post_meta( $similar_id, 'nekoko_listing_price', true ); $similar_agreed = '1' === get_post_meta( $similar_id, 'nekoko_listing_price_agreed', true ); ?>

@@ -63,13 +63,56 @@ function nekoko_core_advanced_search_stem_title_search( $search, $query ) {
 }
 add_filter( 'posts_search', 'nekoko_core_advanced_search_stem_title_search', 10, 2 );
 
+/**
+ * A city search also recognizes the listing location, its title and city tags.
+ * The custom query flag keeps this SQL clause isolated to advanced search only.
+ */
+function nekoko_core_advanced_search_city_where( $where, $query ) {
+	$city = $query->get( 'nekoko_city_search' );
+	if ( ! is_string( $city ) || '' === $city ) { return $where; }
+
+	global $wpdb;
+	$like = '%' . $wpdb->esc_like( $city ) . '%';
+	$where .= $wpdb->prepare(
+		" AND (
+			{$wpdb->posts}.post_title LIKE %s
+			OR EXISTS (
+				SELECT 1 FROM {$wpdb->postmeta} AS nekoko_city_meta
+				WHERE nekoko_city_meta.post_id = {$wpdb->posts}.ID
+				AND nekoko_city_meta.meta_key = %s
+				AND nekoko_city_meta.meta_value LIKE %s
+			)
+			OR EXISTS (
+				SELECT 1
+				FROM {$wpdb->term_relationships} AS nekoko_city_relationship
+				INNER JOIN {$wpdb->term_taxonomy} AS nekoko_city_taxonomy
+					ON nekoko_city_relationship.term_taxonomy_id = nekoko_city_taxonomy.term_taxonomy_id
+				INNER JOIN {$wpdb->terms} AS nekoko_city_term
+					ON nekoko_city_taxonomy.term_id = nekoko_city_term.term_id
+				WHERE nekoko_city_relationship.object_id = {$wpdb->posts}.ID
+				AND nekoko_city_taxonomy.taxonomy = %s
+				AND ( nekoko_city_term.name LIKE %s OR nekoko_city_term.slug LIKE %s )
+			)
+		)",
+		$like,
+		'nekoko_listing_location',
+		$like,
+		'oglas_tag',
+		$like,
+		$like
+	);
+	return $where;
+}
+add_filter( 'posts_where', 'nekoko_core_advanced_search_city_where', 10, 2 );
+
 function nekoko_core_advanced_search_query( $params ) {
 	$args = array( 'post_type' => 'oglas', 'post_status' => 'publish', 'posts_per_page' => 24, 'nekoko_stem_search' => $params['q'], 'no_found_rows' => false );
+	if ( $params['grad'] ) { $args['nekoko_city_search'] = $params['grad']; }
 	$tax_query = array(); $roots = nekoko_core_category_roots();
 	if ( $params['tip'] && isset( $roots[ $params['tip'] ] ) ) { $tax_query[] = array( 'taxonomy' => 'kategorija_oglasa', 'field' => 'term_id', 'terms' => array( $roots[ $params['tip'] ]->term_id ), 'include_children' => true ); }
 	if ( $params['kategorija'] ) { $tax_query[] = array( 'taxonomy' => 'kategorija_oglasa', 'field' => 'term_id', 'terms' => array( $params['kategorija'] ), 'include_children' => true ); }
 	if ( $tax_query ) { $args['tax_query'] = $tax_query; }
-	$meta = array(); if ( $params['grad'] ) { $meta[] = array( 'key' => 'nekoko_listing_location', 'value' => $params['grad'], 'compare' => 'LIKE' ); }
+	$meta = array();
 	if ( $params['cena_od'] || $params['cena_do'] ) { $meta[] = array( 'key' => 'nekoko_listing_price', 'value' => array( $params['cena_od'], $params['cena_do'] ?: 999999999 ), 'type' => 'NUMERIC', 'compare' => 'BETWEEN' ); }
 	if ( 'potraznja' === $params['tip'] && $params['trajanje'] ) { $meta[] = array( 'key' => 'nekoko_listing_duration', 'value' => $params['trajanje'], 'compare' => 'LIKE' ); }
 	if ( $meta ) { $args['meta_query'] = $meta; }

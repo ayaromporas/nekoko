@@ -32,6 +32,22 @@ function nekoko_core_profile_display_name( $format, $user_login, $first_name, $l
 	return trim( $first_name . ' ' . $last_name );
 }
 
+function nekoko_core_profile_image_ids( $user_id ) {
+	$primary = absint( get_user_meta( $user_id, 'nekoko_profile_image', true ) );
+	$gallery = get_user_meta( $user_id, 'nekoko_profile_gallery', true );
+	$gallery = is_array( $gallery ) ? array_map( 'absint', $gallery ) : array();
+	if ( $primary ) { array_unshift( $gallery, $primary ); }
+
+	return array_values(
+		array_filter(
+			array_unique( $gallery ),
+			static function( $image_id ) {
+				return $image_id && 'attachment' === get_post_type( $image_id ) && wp_attachment_is_image( $image_id );
+			}
+		)
+	);
+}
+
 function nekoko_core_profile_submit() {
 	if ( empty( $_POST['nekoko_profile_form'] ) ) {
 		return;
@@ -73,9 +89,25 @@ function nekoko_core_profile_submit() {
 		exit;
 	}
 
-	$new_profile_image = nekoko_core_handle_user_image( 'nekoko_profile_image_upload', $id );
-	if ( is_wp_error( $new_profile_image ) ) {
-		set_transient( 'nekoko_profile_errors_' . $id, $new_profile_image, MINUTE_IN_SECONDS );
+	$current_profile_images = nekoko_core_profile_image_ids( $id );
+	$requested_removals = array_filter( array_map( 'absint', (array) ( $_POST['nekoko_remove_profile_images'] ?? array() ) ) );
+	if ( ! empty( $_POST['nekoko_remove_profile_image'] ) ) {
+		$requested_removals[] = absint( get_user_meta( $id, 'nekoko_profile_image', true ) );
+	}
+	$requested_removals = array_values( array_intersect( $requested_removals, $current_profile_images ) );
+	$remaining_profile_images = array_values( array_diff( $current_profile_images, $requested_removals ) );
+	$uploaded_names = isset( $_FILES['nekoko_profile_images']['name'] ) ? array_filter( (array) $_FILES['nekoko_profile_images']['name'] ) : array();
+	$max_profile_images = 6;
+	if ( count( $remaining_profile_images ) + count( $uploaded_names ) > $max_profile_images ) {
+		$errors->add( 'profile_images', sprintf( 'Možete imati najviše %d profilnih fotografija.', $max_profile_images ) );
+		set_transient( 'nekoko_profile_errors_' . $id, $errors, MINUTE_IN_SECONDS );
+		wp_safe_redirect( nekoko_core_page_url( 'moj-profil' ) );
+		exit;
+	}
+
+	$new_profile_images = nekoko_core_handle_user_images( 'nekoko_profile_images', $id );
+	if ( is_wp_error( $new_profile_images ) ) {
+		set_transient( 'nekoko_profile_errors_' . $id, $new_profile_images, MINUTE_IN_SECONDS );
 		wp_safe_redirect( nekoko_core_page_url( 'moj-profil' ) );
 		exit;
 	}
@@ -86,11 +118,24 @@ function nekoko_core_profile_submit() {
 	update_user_meta( $id, 'nekoko_phone_country', $country );
 	update_user_meta( $id, 'nekoko_city', sanitize_text_field( wp_unslash( $_POST['nekoko_city'] ?? '' ) ) );
 	update_user_meta( $id, 'nekoko_profile_bio', sanitize_textarea_field( wp_unslash( $_POST['nekoko_profile_bio'] ?? '' ) ) );
+	update_user_meta( $id, 'nekoko_show_email', ! empty( $_POST['nekoko_show_email'] ) ? '1' : '0' );
 	update_user_meta( $id, 'nekoko_show_phone', ! empty( $_POST['nekoko_show_phone'] ) ? '1' : '0' );
 	update_user_meta( $id, 'nekoko_show_city', ! empty( $_POST['nekoko_show_city'] ) ? '1' : '0' );
-	if ( $new_profile_image ) {
-		update_user_meta( $id, 'nekoko_profile_image', $new_profile_image );
-	} elseif ( ! empty( $_POST['nekoko_remove_profile_image'] ) ) {
+	$profile_images = array_values( array_unique( array_merge( $remaining_profile_images, $new_profile_images ) ) );
+	$requested_primary = absint( $_POST['nekoko_profile_primary_image'] ?? 0 );
+	$current_primary = absint( get_user_meta( $id, 'nekoko_profile_image', true ) );
+	if ( $requested_primary && in_array( $requested_primary, $profile_images, true ) ) {
+		$primary_profile_image = $requested_primary;
+	} elseif ( $current_primary && in_array( $current_primary, $profile_images, true ) ) {
+		$primary_profile_image = $current_primary;
+	} else {
+		$primary_profile_image = $profile_images ? $profile_images[0] : 0;
+	}
+	if ( $profile_images ) {
+		update_user_meta( $id, 'nekoko_profile_gallery', $profile_images );
+		update_user_meta( $id, 'nekoko_profile_image', $primary_profile_image );
+	} else {
+		delete_user_meta( $id, 'nekoko_profile_gallery' );
 		delete_user_meta( $id, 'nekoko_profile_image' );
 	}
 
@@ -149,3 +194,21 @@ function nekoko_core_shortcode_profile() {
 	return nekoko_core_template( 'profile-form' );
 }
 add_shortcode( 'nekoko_profile_form', 'nekoko_core_shortcode_profile' );
+
+function nekoko_core_account_settings_submit() {
+	if ( empty( $_POST['nekoko_account_settings'] ) ) { return; }
+	nekoko_core_require_login();
+	if ( ! wp_verify_nonce( $_POST['_wpnonce'] ?? '', 'nekoko_account_settings' ) ) { wp_die( 'Nevažeći zahtev.', 403 ); }
+	$enabled = ! empty( $_POST['nekoko_marketing_email_opt_in'] ) && '1' === (string) $_POST['nekoko_marketing_email_opt_in'];
+	update_user_meta( get_current_user_id(), 'nekoko_marketing_email_opt_in', $enabled ? '1' : '0' );
+	set_transient( 'nekoko_account_settings_notice_' . get_current_user_id(), $enabled ? 'Primanje promo i informativnih emailova je uključeno.' : 'Primanje promo i informativnih emailova je isključeno.', MINUTE_IN_SECONDS );
+	wp_safe_redirect( nekoko_core_page_url( 'podesavanje-naloga' ) );
+	exit;
+}
+add_action( 'template_redirect', 'nekoko_core_account_settings_submit', 11 );
+
+function nekoko_core_shortcode_account_settings() {
+	nekoko_core_require_login();
+	return nekoko_core_template( 'account-settings' );
+}
+add_shortcode( 'nekoko_account_settings', 'nekoko_core_shortcode_account_settings' );

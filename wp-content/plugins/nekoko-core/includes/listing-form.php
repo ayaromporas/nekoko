@@ -15,7 +15,13 @@ function nekoko_core_listing_form_submit() {
 	$duration = sanitize_text_field( wp_unslash( $_POST['nekoko_listing_duration'] ?? '' ) ); $duration_na = ! empty( $_POST['nekoko_listing_duration_na'] );
 	if ( ! $title || ! $content || ! $valid_category || ! $valid_subcategory || is_wp_error( $classified ) || $classified['root']->slug !== $branch || ( 'potraznja' === $branch && ! $duration && ! $duration_na ) ) { set_transient( 'nekoko_listing_error_' . get_current_user_id(), 'Izaberite tip oglasa i kategoriju iz tog tipa. Za Potražnju unesite trajanje ili označite da nije primenljivo.', MINUTE_IN_SECONDS ); wp_safe_redirect( $redirect_url ); exit; }
 	$excerpt = sanitize_textarea_field( wp_unslash( $_POST['post_excerpt'] ?? '' ) );
-	$data = array( 'ID' => $post_id, 'post_type' => 'oglas', 'post_title' => $title, 'post_excerpt' => $excerpt, 'post_content' => $content, 'post_author' => get_current_user_id(), 'post_status' => $post_id ? get_post_status( $post_id ) : ( 'publish' === nekoko_core_option( 'nekoko_listing_status', 'pending' ) ? 'publish' : 'pending' ), 'tax_input' => array( 'kategorija_oglasa' => $classified['ids'] ) );
+	$current_status = $post_id ? get_post_status( $post_id ) : '';
+	$is_own_listing = ! $post_id || (int) get_post_field( 'post_author', $post_id ) === get_current_user_id();
+	$post_status = $post_id ? $current_status : ( 'publish' === nekoko_core_option( 'nekoko_listing_status', 'pending' ) ? 'publish' : 'pending' );
+	if ( current_user_can( 'manage_options' ) && $is_own_listing && ( ! $post_id || 'pending' === $post_status ) ) {
+		$post_status = 'publish';
+	}
+	$data = array( 'ID' => $post_id, 'post_type' => 'oglas', 'post_title' => $title, 'post_excerpt' => $excerpt, 'post_content' => $content, 'post_author' => get_current_user_id(), 'post_status' => $post_status, 'tax_input' => array( 'kategorija_oglasa' => $classified['ids'] ) );
 	$saved = wp_insert_post( wp_slash( $data ), true ); if ( is_wp_error( $saved ) ) { set_transient( 'nekoko_listing_error_' . get_current_user_id(), 'Oglas nije moguće sačuvati.', MINUTE_IN_SECONDS ); wp_safe_redirect( $redirect_url ); exit; }
 	wp_set_object_terms( $saved, $classified['ids'], 'kategorija_oglasa', false ); wp_set_object_terms( $saved, array_filter( array_map( 'trim', explode( ',', $tags ) ) ), 'oglas_tag', false );
 	if ( isset( $_POST['nekoko_listing_location'] ) ) { $value = sanitize_text_field( wp_unslash( $_POST['nekoko_listing_location'] ) ); function_exists( 'update_field' ) ? update_field( 'nekoko_listing_location', $value, $saved ) : update_post_meta( $saved, 'nekoko_listing_location', $value ); }

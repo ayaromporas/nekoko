@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 define( 'NEKOKO_CORE_FILE', __FILE__ );
 require_once __DIR__ . '/includes/content-model.php';
+require_once __DIR__ . '/includes/performance.php';
 require_once __DIR__ . '/includes/classification.php';
 require_once __DIR__ . '/includes/classification-admin.php';
 require_once __DIR__ . '/includes/category-media.php';
@@ -42,6 +43,7 @@ require_once __DIR__ . '/includes/listing-permissions.php';
 require_once __DIR__ . '/includes/listing-form.php';
 require_once __DIR__ . '/includes/test-listings.php';
 require_once __DIR__ . '/includes/listing-interactions.php';
+require_once __DIR__ . '/includes/reviews.php';
 require_once __DIR__ . '/includes/user-dashboard.php';
 require_once __DIR__ . '/includes/profile.php';
 

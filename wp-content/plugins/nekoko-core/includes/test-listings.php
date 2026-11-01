@@ -209,3 +209,15 @@ function nekoko_core_render_test_listings_page() {
 }
 function nekoko_core_add_test_listings_menu() { add_submenu_page( 'nekoko-settings', 'Test oglasi', 'Test oglasi', 'manage_options', 'nekoko-test-listings', 'nekoko_core_render_test_listings_page' ); }
 add_action( 'admin_menu', 'nekoko_core_add_test_listings_menu', 102 );
+
+function nekoko_core_test_listings_admin_styles() {
+	?>
+	<style>
+		.nekoko-test-listings__form { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; margin: 0 0 .8rem; }
+		.nekoko-test-listings__form label { display: inline-flex; align-items: center; gap: .45rem; }
+		.nekoko-test-listings__form .button { margin: 0; }
+		.nekoko-test-listings hr + h2 { margin-top: 1.35rem; }
+	</style>
+	<?php
+}
+add_action( 'admin_head', 'nekoko_core_test_listings_admin_styles' );

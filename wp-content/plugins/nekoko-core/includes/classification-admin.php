@@ -137,3 +137,15 @@ function nekoko_core_filter_admin_oglasi( $query ) {
 	$query->set( 'tax_query', $tax_query );
 }
 add_action( 'pre_get_posts', 'nekoko_core_filter_admin_oglasi' );
+
+/** Keep listings awaiting moderation at the top of the admin list, regardless of the selected sort. */
+function nekoko_core_prioritize_unapproved_admin_listings( $orderby, $query ) {
+	if ( ! is_admin() || ! $query->is_main_query() || 'oglas' !== $query->get( 'post_type' ) ) {
+		return $orderby;
+	}
+
+	global $wpdb;
+	$priority = "CASE WHEN {$wpdb->posts}.post_status IN ('pending', 'draft') THEN 0 ELSE 1 END ASC";
+	return $priority . ( $orderby ? ', ' . $orderby : '' );
+}
+add_filter( 'posts_orderby', 'nekoko_core_prioritize_unapproved_admin_listings', 10, 2 );

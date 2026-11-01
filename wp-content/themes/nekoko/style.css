@@ -326,11 +326,34 @@ input[type="submit"]:focus,
 @media (prefers-reduced-motion: reduce) { .menu-toggle__icon span { transition: none; } }
 
 .nekoko-public-profile { max-width: var(--nekoko-content-width); margin: 3rem auto 5rem; }
-.nekoko-public-profile__header { display: flex; align-items: center; gap: 1.5rem; padding: 2rem; border: 1px solid var(--nekoko-border); border-radius: var(--nekoko-card-radius); background: var(--nekoko-white); }
+.nekoko-public-profile__header { position: relative; display: flex; align-items: center; gap: 1.5rem; padding: 2rem; border: 1px solid var(--nekoko-border); border-radius: var(--nekoko-card-radius); background: var(--nekoko-white); }
 .nekoko-public-profile__image { flex: 0 0 auto; width: 8rem; height: 8rem; border-radius: 50%; object-fit: cover; }
+.nekoko-public-profile__identity { min-width: 0; }
 .nekoko-public-profile__eyebrow { margin: 0 0 .35rem; color: var(--nekoko-primary); font-size: var(--nekoko-font-size-small); font-weight: 700; }
 .nekoko-public-profile__header h1 { margin: 0; }
-.nekoko-public-profile__city { margin: .35rem 0 0; color: var(--nekoko-muted); }
+.nekoko-public-profile__city { display: inline-flex; align-items: center; gap: .45rem; margin: .35rem 0 0; color: var(--nekoko-muted); }
+.nekoko-public-profile__city svg { flex: 0 0 auto; width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.nekoko-public-profile__contact { display: flex; flex-direction: column; align-items: flex-start; gap: .42rem; margin-top: .55rem; font-size: .9rem; }
+.nekoko-public-profile__contact a { display: inline-flex; align-items: center; gap: .45rem; color: var(--nekoko-primary); text-decoration: none; }
+.nekoko-public-profile__contact svg { flex: 0 0 auto; width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.nekoko-public-profile__contact a:hover, .nekoko-public-profile__contact a:focus-visible { text-decoration: underline; }
+.nekoko-public-profile__reviews { display: inline-flex; align-items: center; gap: .3rem; margin: .45rem 0 0; color: #52677b; font-size: 1rem; }
+.nekoko-public-profile__reviews > span:first-child { color: var(--nekoko-secondary); font-size: 1.3rem; line-height: 1; }
+.nekoko-public-profile__reviews strong { color: var(--nekoko-ink); }
+.nekoko-public-profile__header-bio { max-width: 42rem; margin: .8rem 0 0; color: var(--nekoko-muted); line-height: 1.55; }
+.nekoko-public-profile__gallery { display: grid; grid-template-columns: repeat(2, 4.8rem); gap: .6rem; margin-left: auto; }
+.nekoko-public-profile__gallery-button { display: block; padding: 0; border: 0; border-radius: .55rem; background: none; cursor: zoom-in; overflow: hidden; }
+.nekoko-public-profile__gallery-button:focus-visible { outline: 2px solid var(--nekoko-primary); outline-offset: 3px; }
+.nekoko-public-profile__gallery-image { width: 4.8rem; height: 4.8rem; border-radius: .55rem; object-fit: cover; }
+.nekoko-public-profile__gallery-dialog { width: min(calc(100% - 2rem), 58rem); max-height: calc(100% - 2rem); padding: 0; border: 0; border-radius: .8rem; background: #101820; box-shadow: 0 1.25rem 3rem rgba(4, 28, 51, .38); }
+.nekoko-public-profile__gallery-dialog::backdrop { background: rgba(7, 27, 45, .65); }
+.nekoko-public-profile__gallery-dialog-box { position: relative; display: grid; place-items: center; min-height: 12rem; }
+.nekoko-public-profile__gallery-dialog img { display: block; max-width: 100%; max-height: calc(100vh - 4rem); object-fit: contain; }
+.nekoko-public-profile__gallery-dialog-close { position: absolute; z-index: 1; top: .65rem; right: .65rem; display: grid; place-items: center; width: 2.1rem; height: 2.1rem; padding: 0; border: 0; border-radius: 50%; background: #fff; color: #17233c; font-size: 1.45rem; line-height: 1; cursor: pointer; }
+.nekoko-public-profile__edit { position: absolute; top: 1.25rem; right: 1.25rem; display: inline-flex; align-items: center; min-height: 2.35rem; padding: .45rem .8rem; border: 1px solid var(--nekoko-primary); border-radius: .45rem; color: var(--nekoko-primary); font-size: .86rem; font-weight: 700; text-decoration: none; }
+.nekoko-public-profile__edit:hover, .nekoko-public-profile__edit:focus-visible { background: var(--nekoko-primary); color: #fff; text-decoration: none; }
+.nekoko-public-profile__notice { margin: 1rem 0 0; padding: .8rem 1rem; border-radius: .5rem; background: #dcfce7; color: #14532d; }
+.nekoko-public-profile__notice--error { background: #fee2e2; color: #7f1d1d; }
 .nekoko-public-profile__details { margin-top: 1.5rem; padding: 1.5rem 2rem; border-radius: var(--nekoko-card-radius); background: #f5f2eb; }
 .nekoko-public-profile__details p { margin: 0; }
 .nekoko-public-profile__details p + p { margin-top: .75rem; }
@@ -339,9 +362,20 @@ input[type="submit"]:focus,
 .nekoko-public-profile__listing { display: flex; flex-direction: column; padding: 1.25rem; border: 1px solid var(--nekoko-border); border-radius: var(--nekoko-card-radius); background: var(--nekoko-white); box-shadow: 0 .5rem 1.25rem rgba(31, 41, 55, .07); }
 .nekoko-public-profile__listing img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: .5rem; }
 .nekoko-public-profile__listing h3 { margin: 1rem 0 .5rem; font-size: 1.35rem; }
+.nekoko-public-profile__listing h3 a { color: inherit; text-decoration: none; }
+.nekoko-public-profile__listing h3 a:hover, .nekoko-public-profile__listing h3 a:focus-visible { color: var(--nekoko-primary); text-decoration: none; }
 .nekoko-public-profile__listing p { margin: 0 0 1rem; font-size: 1rem; }
-.nekoko-public-profile__listing .nekoko-text-link { margin-top: auto; font-weight: 700; text-decoration: none; }
-@media (max-width: 48rem) { .nekoko-public-profile { margin: 1.5rem 1rem 3rem; }.nekoko-public-profile__header { align-items: flex-start; padding: 1.25rem; }.nekoko-public-profile__image { width: 5rem; height: 5rem; }.nekoko-public-profile__listing-grid { grid-template-columns: 1fr; } }
+.nekoko-public-profile__listing .nekoko-text-link { margin: 0; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.nekoko-public-profile__listing-actions { display: flex; flex-direction: column; align-items: stretch; gap: .7rem; margin-top: auto; }
+.nekoko-public-profile__collaboration-form { margin: 0; }
+.nekoko-public-profile__collaboration-form button { width: 100%; padding: .58rem .7rem; border: 1px solid var(--nekoko-primary); border-radius: .45rem; background: var(--nekoko-primary); color: #fff; font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer; }
+.nekoko-public-profile__collaboration-status { display: inline-flex; align-items: center; gap: .4rem; margin: 0 !important; color: #218c43; font-size: .84rem !important; font-weight: 700; }
+.nekoko-public-profile__collaboration-status--pending { width: fit-content; padding: .52rem .65rem; border: 1px solid #8bd3a1; border-radius: .45rem; background: #effbf2; color: #18733a; }
+.nekoko-public-profile__collaboration-info { display: grid; place-items: center; width: 1.05rem; height: 1.05rem; border: 1px solid currentColor; border-radius: 50%; font-size: .72rem; font-style: normal; font-weight: 800; line-height: 1; cursor: help; }
+.nekoko-public-profile__collaboration-info:focus-visible { outline: 2px solid var(--nekoko-primary); outline-offset: 2px; }
+.nekoko-public-profile__collaboration-login { margin: 0 !important; font-size: .84rem !important; }
+@media (max-width: 48rem) { .nekoko-public-profile { margin: 1.5rem 1rem 3rem; }.nekoko-public-profile__header { align-items: flex-start; padding: 1.25rem; }.nekoko-public-profile__image { width: 5rem; height: 5rem; }.nekoko-public-profile__gallery { grid-template-columns: repeat(2, 3.8rem); gap: .45rem; }.nekoko-public-profile__gallery-image { width: 3.8rem; height: 3.8rem; }.nekoko-public-profile__listing-grid { grid-template-columns: 1fr; } }
+@media (max-width: 34rem) { .nekoko-public-profile__header { flex-wrap: wrap; padding-top: 4.5rem; }.nekoko-public-profile__gallery { width: 100%; grid-template-columns: repeat(auto-fill, minmax(4rem, 1fr)); margin-top: 0; }.nekoko-public-profile__gallery-image { width: 100%; height: auto; aspect-ratio: 1; } }
 
 /* Full-width primary header and account navigation. */
 .site-header__inner { display: flex; align-items: center; width: 100%; min-height: 7.25rem; max-width: none; padding: 1.5rem clamp(1.5rem, 2.7vw, 3.25rem); margin: 0; gap: clamp(1.5rem, 2.8vw, 3.75rem); }
@@ -413,7 +447,7 @@ input[type="submit"]:focus,
 
 /* The search icon has a fixed visual center inside its square submit button. */
 .header-search__submit { position: relative; }
-.header-search__submit svg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.header-search__submit svg { position: absolute; top: 50%; left: calc(50% + 2px); transform: translate(-50%, -50%); }
 
 /* Use one inset chevron for all public-facing select controls. */
 .site-main select,

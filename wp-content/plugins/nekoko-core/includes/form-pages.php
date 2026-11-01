@@ -10,11 +10,12 @@ function nekoko_core_frontend_pages() {
 		'moji-oglasi' => array( 'title' => 'Moji oglasi', 'content' => '[nekoko_user_listings]' ),
 		'sacuvani-oglasi' => array( 'title' => 'Sačuvani oglasi', 'content' => '[nekoko_saved_listings]' ),
 		'moj-profil' => array( 'title' => 'Moj profil', 'content' => '[nekoko_profile_form]' ),
+		'podesavanje-naloga' => array( 'title' => 'Podešavanje naloga', 'content' => '[nekoko_account_settings]' ),
 	);
 }
 
 function nekoko_core_maybe_setup_frontend_pages() {
-	$version = '3';
+	$version = '4';
 	if ( get_option( 'nekoko_frontend_pages_version' ) === $version ) { return; }
 	foreach ( nekoko_core_frontend_pages() as $slug => $page ) {
 		$existing = get_page_by_path( $slug, OBJECT, 'page' );

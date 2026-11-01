@@ -8,11 +8,14 @@ $user           = get_userdata( $id );
 $errors         = get_transient( 'nekoko_profile_errors_' . $id );
 $notice         = get_transient( 'nekoko_profile_notice_' . $id );
 $password_error = get_transient( 'nekoko_profile_password_error_' . $id );
+$collaboration_notice = function_exists( 'nekoko_core_take_collaboration_notice' ) ? nekoko_core_take_collaboration_notice( $id ) : false;
+$incoming_collaborations = function_exists( 'nekoko_core_incoming_collaboration_requests' ) ? nekoko_core_incoming_collaboration_requests( $id ) : array();
 $phone_full     = preg_replace( '/\D+/', '', (string) get_user_meta( $id, 'nekoko_phone', true ) );
 $phone_country  = preg_replace( '/\D+/', '', (string) get_user_meta( $id, 'nekoko_phone_country', true ) );
 $countries      = nekoko_core_phone_countries();
 $display_format = get_user_meta( $id, 'nekoko_display_name_format', true );
 $profile_image  = absint( get_user_meta( $id, 'nekoko_profile_image', true ) );
+$profile_images = function_exists( 'nekoko_core_profile_image_ids' ) ? nekoko_core_profile_image_ids( $id ) : array_filter( array( $profile_image ) );
 
 if ( ! in_array( $display_format, array( 'username', 'full_name', 'first_last_initial' ), true ) ) {
 	$display_format = $user->display_name === $user->user_login ? 'username' : 'full_name';
@@ -47,6 +50,9 @@ delete_transient( 'nekoko_profile_password_error_' . $id );
 	if ( $password_error ) {
 		echo nekoko_core_form_notice( $password_error, 'error' );
 	}
+	if ( $collaboration_notice ) {
+		echo nekoko_core_form_notice( $collaboration_notice['message'], 'error' === $collaboration_notice['type'] ? 'error' : 'success' );
+	}
 	?>
 
 	<form class="nekoko-form" method="post" action="" enctype="multipart/form-data">
@@ -62,6 +68,7 @@ delete_transient( 'nekoko_profile_password_error_' . $id );
 			<label><input type="radio" name="nekoko_display_name_format" value="first_last_initial" <?php checked( $display_format, 'first_last_initial' ); ?>> Ime i prvo slovo prezimena <span class="nekoko-form__help">Primer: <?php echo esc_html( nekoko_core_profile_display_name( 'first_last_initial', $user->user_login, $user->first_name, $user->last_name ) ); ?></span></label>
 		</fieldset>
 		<p><label>Email adresa *<input type="email" name="user_email" required autocomplete="email" value="<?php echo esc_attr( $user->user_email ); ?>" aria-describedby="nekoko-email-validation" data-nekoko-validation-message="nekoko-email-validation"></label><span id="nekoko-email-validation" class="nekoko-form__validation" hidden>Email mora biti u formatu ime@domen.rs.</span></p>
+		<p><label><input type="checkbox" name="nekoko_show_email" value="1" <?php checked( get_user_meta( $id, 'nekoko_show_email', true ), '1' ); ?>> Dozvoljavam da se moj email vidi na mom profilu</label></p>
 		<p><label>Trenutna lozinka (samo za promenu emaila)<input type="password" name="current_password" autocomplete="current-password"></label></p>
 		<p class="nekoko-phone-field">
 			<span class="nekoko-phone-field__label">Telefon</span>
@@ -81,21 +88,44 @@ delete_transient( 'nekoko_profile_password_error_' . $id );
 		<p><label>Grad/opština<input name="nekoko_city" value="<?php echo esc_attr( get_user_meta( $id, 'nekoko_city', true ) ); ?>"></label></p>
 		<p><label><input type="checkbox" name="nekoko_show_city" value="1" <?php checked( get_user_meta( $id, 'nekoko_show_city', true ), '1' ); ?>> Dozvoljavam da se moja lokacija vidi na mom profilu</label></p>
 		<div class="nekoko-profile-image-field">
-			<span class="nekoko-file-input__label">Profilna fotografija</span>
-			<?php if ( $profile_image ) { ?>
-				<figure class="nekoko-profile-image-preview">
-					<button class="nekoko-profile-image-preview__remove" type="button" data-nekoko-remove-profile-image aria-pressed="false" aria-label="Ukloni profilnu fotografiju"><span aria-hidden="true">×</span></button>
-					<input type="hidden" name="nekoko_remove_profile_image" value="1" disabled>
-					<?php echo wp_get_attachment_image( $profile_image, 'thumbnail', false, array( 'alt' => '' ) ); ?>
-				</figure>
-				<span class="nekoko-form__help">Kliknite ×, pa sačuvajte profil, da biste uklonili fotografiju.</span>
+			<span class="nekoko-file-input__label">Fotografije profila</span>
+			<?php if ( $profile_images ) { ?>
+				<div class="nekoko-profile-image-gallery" role="group" aria-label="Izbor glavne profilne fotografije">
+					<?php foreach ( $profile_images as $image_id ) { ?>
+						<figure class="nekoko-profile-image-preview<?php echo $image_id === $profile_image ? ' is-primary' : ''; ?>">
+							<button class="nekoko-profile-image-preview__remove" type="button" data-nekoko-remove-profile-gallery-image aria-pressed="false" aria-label="Ukloni fotografiju"><span aria-hidden="true">×</span></button>
+							<input type="hidden" name="nekoko_remove_profile_images[]" value="<?php echo esc_attr( $image_id ); ?>" disabled>
+							<?php echo wp_get_attachment_image( $image_id, 'thumbnail', false, array( 'alt' => '' ) ); ?>
+							<label class="nekoko-profile-image-preview__primary"><input type="radio" name="nekoko_profile_primary_image" value="<?php echo esc_attr( $image_id ); ?>" <?php checked( $image_id, $profile_image ); ?>> Glavna</label>
+						</figure>
+					<?php } ?>
+				</div>
+				<span class="nekoko-form__help">Označite fotografiju koja će biti prikazana kao glavna na javnom profilu i uz oglase.</span>
 			<?php } ?>
-			<label class="nekoko-file-input"><input class="nekoko-file-input__native" type="file" name="nekoko_profile_image_upload" accept="image/jpeg,image/png,image/webp" data-nekoko-file-input><span class="nekoko-file-input__button"><?php echo $profile_image ? 'Zamenite sliku' : 'Izaberite sliku'; ?></span><span class="nekoko-file-input__status" data-nekoko-file-status>Nijedna slika nije izabrana</span></label>
-			<span class="nekoko-form__help">Dozvoljene su JPG, PNG i WebP slike.</span>
+			<label class="nekoko-file-input"><input class="nekoko-file-input__native" type="file" name="nekoko_profile_images[]" accept="image/jpeg,image/png,image/webp" multiple data-nekoko-file-input><span class="nekoko-file-input__button">Dodajte fotografije</span><span class="nekoko-file-input__status" data-nekoko-file-status>Nijedna slika nije izabrana</span></label>
+			<span class="nekoko-form__help">Možete imati najviše 6 JPG, PNG ili WebP fotografija.</span>
 		</div>
 		<p><label>U par reči o meni<textarea name="nekoko_profile_bio" maxlength="500"><?php echo esc_textarea( get_user_meta( $id, 'nekoko_profile_bio', true ) ); ?></textarea></label></p>
 		<button type="submit">Sačuvajte profil</button>
 	</form>
+
+	<?php if ( $incoming_collaborations ) : ?>
+		<section class="nekoko-collaboration-requests" aria-labelledby="nekoko-collaboration-requests-title">
+			<h3 id="nekoko-collaboration-requests-title">Zahtevi za potvrdu saradnje</h3>
+			<p>Potvrdite samo saradnju koja je zaista realizovana. Nakon potvrde, korisnik može da ostavi recenziju za taj oglas.</p>
+			<div class="nekoko-collaboration-requests__list">
+				<?php foreach ( $incoming_collaborations as $collaboration ) : ?>
+					<article class="nekoko-collaboration-request">
+						<div><strong><?php echo esc_html( $collaboration->display_name ); ?></strong><span>za oglas „<?php echo esc_html( $collaboration->post_title ); ?>”</span></div>
+						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+							<?php wp_nonce_field( 'nekoko_confirm_collaboration_' . $collaboration->id ); ?><input type="hidden" name="action" value="nekoko_confirm_collaboration"><input type="hidden" name="collaboration_id" value="<?php echo esc_attr( $collaboration->id ); ?>">
+							<button type="submit">Potvrdi saradnju</button>
+						</form>
+					</article>
+				<?php endforeach; ?>
+			</div>
+		</section>
+	<?php endif; ?>
 
 	<?php if ( get_user_meta( $id, 'nekoko_pending_email', true ) ) { ?>
 		<p>Čeka potvrdu: <?php echo esc_html( get_user_meta( $id, 'nekoko_pending_email', true ) ); ?> · <a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'nekoko_cancel_email', '1', nekoko_core_page_url( 'moj-profil' ) ), 'nekoko_cancel_email' ) ); ?>">Otkažite promenu</a></p>

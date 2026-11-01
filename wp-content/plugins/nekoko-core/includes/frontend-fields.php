@@ -4,6 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 function nekoko_core_add_frontend_settings_pages() {
 	nekoko_core_add_settings_subpage( 'nekoko-settings-registration', 'Registracija i email', 'Registracija i email' );
 	nekoko_core_add_settings_subpage( 'nekoko-settings-listings', 'Oglasi', 'Oglasi' );
+	nekoko_core_add_settings_subpage( 'nekoko-settings-information', 'Informacije', 'Informacije' );
 }
 add_action( 'acf/init', 'nekoko_core_add_frontend_settings_pages', 11 );
 
@@ -16,6 +17,7 @@ function nekoko_core_register_frontend_fields() {
 	if ( ! function_exists( 'acf_add_local_field_group' ) || ! function_exists( 'acf_get_options_page' ) ) { return; }
 	$registration = acf_get_options_page( 'nekoko-settings-registration' );
 	$listings = acf_get_options_page( 'nekoko-settings-listings' );
+	$information = acf_get_options_page( 'nekoko-settings-information' );
 	if ( $registration ) { acf_add_local_field_group( array( 'key' => 'group_nekoko_registration_options', 'title' => 'Registracija i email', 'active' => true, 'location' => array( array( array( 'param' => 'options_page', 'operator' => '==', 'value' => $registration['menu_slug'] ) ) ), 'fields' => array(
 		array( 'key' => 'field_nekoko_verification_subject', 'label' => 'Naslov verifikacionog emaila', 'name' => 'nekoko_verification_subject', 'type' => 'text', 'default_value' => 'Potvrdite svoju NekoKO email adresu' ),
 		array( 'key' => 'field_nekoko_verification_intro', 'label' => 'Uvodni tekst emaila', 'name' => 'nekoko_verification_intro', 'type' => 'textarea', 'default_value' => 'Hvala na registraciji. Potvrdite email adresu da biste koristili NekoKO.' ),
@@ -35,6 +37,13 @@ function nekoko_core_register_frontend_fields() {
 		array( 'key' => 'field_nekoko_max_images', 'label' => 'Maksimalan broj slika', 'name' => 'nekoko_max_images', 'type' => 'number', 'default_value' => 6, 'min' => 1, 'max' => 12 ),
 		array( 'key' => 'field_nekoko_max_image_size', 'label' => 'Maksimalna veličina slike (MB)', 'name' => 'nekoko_max_image_size', 'type' => 'number', 'default_value' => 5, 'min' => 1, 'max' => 20 ),
 	) ) ); }
+	if ( $information ) { acf_add_local_field_group( array( 'key' => 'group_nekoko_information_options', 'title' => 'Informacije za korisnike', 'active' => true, 'location' => array( array( array( 'param' => 'options_page', 'operator' => '==', 'value' => $information['menu_slug'] ) ) ), 'fields' => array(
+		array( 'key' => 'field_nekoko_pending_listing_label', 'label' => 'Oznaka oglasa koji čeka odobrenje', 'name' => 'nekoko_pending_listing_label', 'type' => 'text', 'default_value' => 'Čeka odobrenje' ),
+		array( 'key' => 'field_nekoko_pending_listing_info', 'label' => 'Objašnjenje odobravanja oglasa', 'name' => 'nekoko_pending_listing_info', 'type' => 'textarea', 'rows' => 3, 'default_value' => 'Vaš oglas će biti javno vidljiv kada ga odobri moderator platforme.', 'instructions' => 'Prikazuje se kada korisnik pređe mišem ili tastaturom fokusira ikonicu pored oznake statusa.' ),
+	) ) ); }
+	if ( $information ) { acf_add_local_field_group( array( 'key' => 'group_nekoko_verified_email_information', 'title' => 'Potvrđen email autora', 'active' => true, 'location' => array( array( array( 'param' => 'options_page', 'operator' => '==', 'value' => $information['menu_slug'] ) ) ), 'fields' => array(
+		array( 'key' => 'field_nekoko_verified_email_label', 'label' => 'Oznaka potvrđenog emaila', 'name' => 'nekoko_verified_email_label', 'type' => 'text', 'default_value' => 'Potvrđen email', 'instructions' => 'Prikazuje se na kartici autora oglasa samo kada je email adresa korisnika potvrđena.' ),
+	) ) ); }
 	acf_add_local_field_group( array( 'key' => 'group_nekoko_listing_fields', 'title' => 'Oglas – detalji', 'active' => true, 'location' => array( array( array( 'param' => 'post_type', 'operator' => '==', 'value' => 'oglas' ) ) ), 'fields' => array(
 		array( 'key' => 'field_nekoko_listing_location', 'label' => 'Lokacija', 'name' => 'nekoko_listing_location', 'type' => 'text', 'required' => 1 ),
 		array( 'key' => 'field_nekoko_listing_price_agreed', 'label' => 'Cena po dogovoru', 'name' => 'nekoko_listing_price_agreed', 'type' => 'true_false', 'ui' => 1 ),
@@ -44,7 +53,7 @@ function nekoko_core_register_frontend_fields() {
 		array( 'key' => 'field_nekoko_listing_gallery', 'label' => 'Galerija', 'name' => 'nekoko_listing_gallery', 'type' => 'gallery', 'return_format' => 'id', 'library' => 'uploadedTo', 'max' => 6, 'mime_types' => 'jpg,jpeg,png,webp' ),
 	) ) );
 	acf_add_local_field_group( array( 'key' => 'group_nekoko_user_profile', 'title' => 'Korisnik – profil', 'active' => true, 'location' => array( array( array( 'param' => 'user_role', 'operator' => '==', 'value' => 'oglasivac' ) ) ), 'fields' => array(
-		array( 'key' => 'field_nekoko_phone', 'label' => 'Telefon', 'name' => 'nekoko_phone', 'type' => 'text' ), array( 'key' => 'field_nekoko_city', 'label' => 'Grad/opština', 'name' => 'nekoko_city', 'type' => 'text' ), array( 'key' => 'field_nekoko_profile_bio', 'label' => 'U par reči o meni', 'name' => 'nekoko_profile_bio', 'type' => 'textarea', 'maxlength' => 500 ), array( 'key' => 'field_nekoko_profile_image', 'label' => 'Profilna fotografija', 'name' => 'nekoko_profile_image', 'type' => 'image', 'return_format' => 'id', 'library' => 'uploadedTo', 'mime_types' => 'jpg,jpeg,png,webp' ), array( 'key' => 'field_nekoko_show_phone', 'label' => 'Dozvoljavam da se moj telefon vidi na mom profilu', 'name' => 'nekoko_show_phone', 'type' => 'true_false', 'ui' => 1 ), array( 'key' => 'field_nekoko_show_city', 'label' => 'Dozvoljavam da se moja lokacija vidi na mom profilu', 'name' => 'nekoko_show_city', 'type' => 'true_false', 'ui' => 1 ),
+		array( 'key' => 'field_nekoko_phone', 'label' => 'Telefon', 'name' => 'nekoko_phone', 'type' => 'text' ), array( 'key' => 'field_nekoko_city', 'label' => 'Grad/opština', 'name' => 'nekoko_city', 'type' => 'text' ), array( 'key' => 'field_nekoko_profile_bio', 'label' => 'U par reči o meni', 'name' => 'nekoko_profile_bio', 'type' => 'textarea', 'maxlength' => 500 ), array( 'key' => 'field_nekoko_profile_image', 'label' => 'Profilna fotografija', 'name' => 'nekoko_profile_image', 'type' => 'image', 'return_format' => 'id', 'library' => 'uploadedTo', 'mime_types' => 'jpg,jpeg,png,webp' ), array( 'key' => 'field_nekoko_show_email', 'label' => 'Dozvoljavam da se moj email vidi na mom profilu', 'name' => 'nekoko_show_email', 'type' => 'true_false', 'ui' => 1 ), array( 'key' => 'field_nekoko_show_phone', 'label' => 'Dozvoljavam da se moj telefon vidi na mom profilu', 'name' => 'nekoko_show_phone', 'type' => 'true_false', 'ui' => 1 ), array( 'key' => 'field_nekoko_show_city', 'label' => 'Dozvoljavam da se moja lokacija vidi na mom profilu', 'name' => 'nekoko_show_city', 'type' => 'true_false', 'ui' => 1 ),
 	) ) );
 }
 add_action( 'acf/init', 'nekoko_core_register_frontend_fields', 30 );

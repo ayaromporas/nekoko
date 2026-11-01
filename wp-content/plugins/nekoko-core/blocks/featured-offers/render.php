@@ -21,8 +21,9 @@ $block_id = 'nekoko-featured-offers-' . sanitize_html_class( $block['id'] ?? wp_
 		<div class="nekoko-featured-offers__grid">
 			<?php foreach ( $listings as $listing ) : $categories = nekoko_core_oglas_categories( $listing->ID ); $category = $categories ? $categories[0]->name : 'Kategorija'; $location = get_post_meta( $listing->ID, 'nekoko_listing_location', true ); $agreed = '1' === get_post_meta( $listing->ID, 'nekoko_listing_price_agreed', true ); $price = get_post_meta( $listing->ID, 'nekoko_listing_price', true ); $price_label = $agreed || '' === $price ? 'Po dogovoru' : number_format_i18n( (float) $price, 0 ) . ' RSD'; ?>
 				<article class="nekoko-featured-offers__card">
+					<a class="nekoko-featured-offers__card-link" href="<?php echo esc_url( get_permalink( $listing ) ); ?>" aria-label="<?php echo esc_attr( $listing->post_title ); ?>"></a>
 					<p class="nekoko-featured-offers__card-pill"><?php echo esc_html( $category ); ?></p>
-					<h3 class="nekoko-featured-offers__card-title"><a href="<?php echo esc_url( get_permalink( $listing ) ); ?>"><?php echo esc_html( $listing->post_title ); ?></a></h3>
+					<h3 class="nekoko-featured-offers__card-title"><?php echo esc_html( $listing->post_title ); ?></h3>
 					<div class="nekoko-featured-offers__card-meta"><span><?php echo esc_html( $location ?: 'Lokacija nije navedena' ); ?></span><strong><?php echo esc_html( $price_label ); ?></strong></div>
 				</article>
 			<?php endforeach; ?>
