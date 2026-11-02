@@ -4,7 +4,7 @@ defined( 'ABSPATH' ) || exit;
 $rocket_cookie_hash = '8470d9814b5acc43beb7f003e9293014';
 $rocket_logged_in_cookie = 'wordpress_logged_in_8470d9814b5acc43beb7f003e9293014';
 $rocket_cache_mobile_files_tablet = 'desktop';
-$rocket_cache_reject_uri = '/nekoko(/(?:.+/)?feed(?:/(?:.+/?)?)?$|/(?:.+/)?embed/|/(index.php/)?(.*)wp-json(/.*|$))';
+$rocket_cache_reject_uri = '/nekoko(/(?:.+/)?feed(?:/(?:.+/?)?)?$|/(?:.+/)?embed/|/registracija/?|/prijava/?|/potvrda-emaila/?|/sve-poruke/?|/poruke-sa-clanom/?|/(index.php/)?(.*)wp-json(/.*|$))';
 $rocket_cache_reject_cookies = 'wordpress_logged_in_.+|wp-postpass_|wptouch_switch_toggle|comment_author_|comment_author_email_';
 $rocket_cache_reject_ua = 'facebookexternalhit|WhatsApp';
 $rocket_cache_query_strings = array();
