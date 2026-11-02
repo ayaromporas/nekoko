@@ -199,6 +199,9 @@ function nekoko_enqueue_assets() {
 	// The header uses the same named Button styles even on pages without Button blocks.
 	wp_enqueue_style( 'nekoko-button-styles', get_theme_file_uri( 'assets/css/button-styles.css' ), array( 'nekoko-style' ), filemtime( get_theme_file_path( 'assets/css/button-styles.css' ) ) );
 	wp_enqueue_script( 'nekoko-theme', get_theme_file_uri( 'assets/js/theme.js' ), array(), filemtime( get_theme_file_path( 'assets/js/theme.js' ) ), true );
+	if ( is_author() ) {
+		wp_add_inline_script( 'nekoko-theme', "(function(){var dialog=document.querySelector('[data-profile-gallery-dialog]');if(!dialog){return;}var image=dialog.querySelector('[data-profile-gallery-dialog-image]');document.querySelectorAll('[data-profile-gallery-open]').forEach(function(button){button.addEventListener('click',function(){if(!image||!button.dataset.imageSrc){return;}image.src=button.dataset.imageSrc;image.alt=button.dataset.imageAlt||'';if(typeof dialog.showModal==='function'){dialog.showModal();}else{dialog.setAttribute('open','open');}});});}());", 'after' );
+	}
 	if ( is_singular( 'oglas' ) ) {
 		wp_enqueue_style( 'nekoko-single-oglas', get_theme_file_uri( 'assets/css/single-oglas.css' ), array( 'nekoko-style' ), filemtime( get_theme_file_path( 'assets/css/single-oglas.css' ) ) );
 		wp_enqueue_script( 'nekoko-single-oglas', get_theme_file_uri( 'assets/js/single-oglas.js' ), array(), filemtime( get_theme_file_path( 'assets/js/single-oglas.js' ) ), true );
@@ -264,9 +267,10 @@ function nekoko_header_actions() {
 
 /** Returns the site-managed "Moj nalog" menu and the secure logout link. */
 function nekoko_header_account_menu() {
-	$items = wp_get_nav_menu_items( 82 );
+	$items = wp_get_nav_menu_items( 'Moj nalog' );
 	$items = is_array( $items ) ? $items : array();
 	$icon_by_title = array(
+		'sve-poruke' => 'messages',
 		'moj-profil'         => 'profile',
 		'moji-oglasi'        => 'listings',
 		'postavite-oglas'    => 'post-ad',
@@ -275,7 +279,7 @@ function nekoko_header_account_menu() {
 		'podesavanje-naloga' => 'settings',
 		'podesavanja-naloga' => 'settings',
 	);
-	$priority = array( 'profile', 'listings', 'post-ad', 'saved', 'settings' );
+	$priority = array( 'profile', 'listings', 'post-ad', 'saved', 'messages', 'settings' );
 	$menu_items = array();
 	foreach ( $items as $item ) {
 		$key = sanitize_title( $item->title );
@@ -307,6 +311,7 @@ function nekoko_header_account_menu() {
 /** Inline outline icons used only by the account navigation. */
 function nekoko_header_account_icon( $name ) {
 	$paths = array(
+		'messages' => '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
 		'profile'   => '<path d="M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>',
 		'listings'  => '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/>',
 		'post-ad'   => '<path d="M12 5v14M5 12h14"/>',

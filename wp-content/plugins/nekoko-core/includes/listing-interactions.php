@@ -55,28 +55,9 @@ function nekoko_core_ajax_send_listing_message() {
 		wp_send_json_error( array( 'message' => 'Poruka treba da ima između 5 i 2.000 karaktera.' ), 400 );
 	}
 
-	$recipient = get_userdata( $post->post_author );
-	$sender = wp_get_current_user();
-	if ( ! $recipient || ! is_email( $recipient->user_email ) || ! is_email( $sender->user_email ) ) {
-		wp_send_json_error( array( 'message' => 'Poruku trenutno nije moguće poslati.' ), 500 );
-	}
-
-	$subject = sprintf( 'NekoKO poruka za oglas: %s', $post->post_title );
-	$body = sprintf(
-		"Zdravo,\n\n%s vam šalje poruku za oglas \"%s\":\n\n%s\n\nOglas: %s\n\nPošiljalac: %s <%s>",
-		$sender->display_name,
-		$post->post_title,
-		$message,
-		get_permalink( $post ),
-		$sender->display_name,
-		$sender->user_email
-	);
-	$headers = array( 'Content-Type: text/plain; charset=UTF-8', sprintf( 'Reply-To: %s <%s>', $sender->display_name, $sender->user_email ) );
-	if ( ! wp_mail( $recipient->user_email, $subject, $body, $headers ) ) {
-		wp_send_json_error( array( 'message' => 'Slanje poruke nije uspelo. Pokušajte ponovo kasnije.' ), 500 );
-	}
-
-	wp_send_json_success( array( 'message' => 'Poruka je uspešno poslata.' ) );
+	$result = nekoko_core_send_member_message( (int) $post->post_author, $message, $post_id );
+	if ( is_wp_error( $result ) ) { wp_send_json_error( array( 'message' => $result->get_error_message() ), 400 ); }
+	wp_send_json_success( array( 'message' => 'Poruka je poslata.', 'url' => nekoko_core_conversation_url( $post->post_author, $post_id ) ) );
 }
 add_action( 'wp_ajax_nekoko_send_listing_message', 'nekoko_core_ajax_send_listing_message' );
 add_action( 'wp_ajax_nopriv_nekoko_send_listing_message', 'nekoko_core_ajax_send_listing_message' );

@@ -120,7 +120,7 @@ $nekoko_icon = static function( $name ) {
 					<p class="nekoko-listing-sidecard__eyebrow"><?php echo $is_demand ? 'Trajanje' : 'Cena'; ?></p>
 					<p class="nekoko-listing-sidecard__price"><?php echo esc_html( $price_label ); ?></p>
 					<?php if ( $excerpt ) : ?><p class="nekoko-listing-sidecard__excerpt"><?php echo esc_html( $excerpt ); ?></p><?php endif; ?>
-					<button class="nekoko-listing-sidecard__message" type="button" data-listing-open-dialog="message"><?php echo $nekoko_icon( 'mail' ); ?>Pošalji poruku</button>
+					<?php if ( get_current_user_id() !== $author_id ) : ?><a class="nekoko-listing-sidecard__message" href="<?php echo esc_url( nekoko_core_conversation_url( $author_id, $listing_id ) ); ?>"><?php echo $nekoko_icon( 'mail' ); ?>Pošalji poruku</a><?php endif; ?>
 					<div class="nekoko-listing-sidecard__actions"><button type="button" data-listing-open-dialog="phone"><?php echo $nekoko_icon( 'phone' ); ?>Pozovi</button><button type="button" data-listing-save aria-pressed="<?php echo $is_saved ? 'true' : 'false'; ?>"><?php echo $nekoko_icon( 'heart' ); ?><span data-listing-save-label><?php echo $is_saved ? 'Sačuvano' : 'Sačuvaj oglas'; ?></span></button></div>
 				</section>
 
@@ -184,7 +184,6 @@ $nekoko_icon = static function( $name ) {
 			<?php endwhile; wp_reset_postdata(); ?></div></section><?php endif; ?>
 	</article>
 
-	<dialog class="nekoko-listing-dialog" data-listing-dialog="message" aria-labelledby="listing-message-title"><form method="dialog" class="nekoko-listing-dialog__box" data-listing-message-form><button class="nekoko-listing-dialog__close" type="button" data-dialog-close aria-label="Zatvori">×</button><h2 id="listing-message-title">Pošaljite poruku</h2><p>Poruka će biti poslata autoru oglasa, uz vaše ime i email adresu.</p><label>Poruka<textarea name="message" required minlength="5" maxlength="2000" placeholder="Napišite poruku…"></textarea></label><p class="nekoko-listing-dialog__status" data-listing-message-status aria-live="polite"></p><button type="submit">Pošalji poruku</button></form></dialog>
 	<dialog class="nekoko-listing-dialog" data-listing-dialog="phone" aria-labelledby="listing-phone-title"><form method="dialog" class="nekoko-listing-dialog__box"><button class="nekoko-listing-dialog__close" type="button" data-dialog-close aria-label="Zatvori">×</button><h2 id="listing-phone-title">Pozovite oglašivača</h2><?php if ( $phone ) : ?><p class="nekoko-listing-dialog__phone"><a href="tel:<?php echo esc_attr( preg_replace( '/[^+0-9]/', '', $phone ) ); ?>"><?php echo esc_html( $phone ); ?></a></p><?php else : ?><p>Autor oglasa trenutno nije ostavio broj telefona.</p><?php endif; ?></form></dialog>
 	<?php endwhile; ?>
 </main>

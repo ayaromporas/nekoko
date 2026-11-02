@@ -45,7 +45,7 @@ $nekoko_listings      = new WP_Query(
 				<?php if ( $nekoko_profile_image ) : ?>
 					<?php echo wp_get_attachment_image( $nekoko_profile_image, 'medium', false, array( 'class' => 'nekoko-public-profile__image', 'alt' => '' ) ); ?>
 				<?php endif; ?>
-				<div class="nekoko-public-profile__identity">
+				<div class="nekoko-public-profile__identity"><?php if ( get_current_user_id() !== (int) $nekoko_profile_id ) : ?><a class="nekoko-message-link" href="<?php echo esc_url( nekoko_core_conversation_url( $nekoko_profile_id ) ); ?>">Pošalji poruku</a><?php endif; ?>
 					<h1 id="nekoko-public-profile-title"><?php echo esc_html( $nekoko_profile_user->display_name ); ?></h1>
 					<p class="nekoko-public-profile__reviews"><span aria-hidden="true">★</span> <strong><?php echo esc_html( $nekoko_review_summary['count'] ? number_format_i18n( $nekoko_review_summary['average'], 1 ) : '—' ); ?></strong> <span>(<?php echo esc_html( $nekoko_review_summary['count'] ); ?> recenzija)</span></p>
 					<?php if ( $nekoko_show_city && $nekoko_profile_city ) : ?><p class="nekoko-public-profile__city"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M20 10.2c0 5.6-8 10.3-8 10.3S4 15.8 4 10.2a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.6"></circle></svg><span><?php echo esc_html( $nekoko_profile_city ); ?></span></p><?php endif; ?>

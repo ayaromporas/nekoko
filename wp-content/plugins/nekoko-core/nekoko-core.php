@@ -46,6 +46,7 @@ require_once __DIR__ . '/includes/listing-interactions.php';
 require_once __DIR__ . '/includes/reviews.php';
 require_once __DIR__ . '/includes/user-dashboard.php';
 require_once __DIR__ . '/includes/profile.php';
+require_once __DIR__ . '/includes/messages.php';
 
 function nekoko_core_activate() {
 	nekoko_core_register_model();
