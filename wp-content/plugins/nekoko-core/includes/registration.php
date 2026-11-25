@@ -15,7 +15,21 @@ function nekoko_core_register_frontend_user() {
 	if ( $errors->has_errors() ) { $GLOBALS['nekoko_registration_errors'] = $errors; return; }
 	$user_id = wp_insert_user( array( 'user_login' => nekoko_core_unique_login_from_email( $email ), 'user_pass' => $password, 'user_email' => $email, 'first_name' => $first, 'last_name' => $last, 'display_name' => trim( $first . ' ' . $last ), 'role' => 'oglasivac' ) );
 	if ( is_wp_error( $user_id ) ) { $GLOBALS['nekoko_registration_errors'] = $user_id; return; }
-	update_user_meta( $user_id, 'nekoko_email_verified', '0' ); update_user_meta( $user_id, 'nekoko_verification_last_sent', time() ); nekoko_core_issue_verification( $user_id );
-	set_transient( 'nekoko_registration_success', nekoko_core_option( 'nekoko_registration_success', 'Registracija je uspešna. Poslali smo vam email sa linkom za potvrdu naloga. Proverite i Spam/Neželjenu poštu.' ), MINUTE_IN_SECONDS ); wp_safe_redirect( nekoko_core_page_url( 'registracija' ) ); exit;
+	update_user_meta( $user_id, 'nekoko_email_verified', '0' );
+	update_user_meta( $user_id, 'nekoko_verification_last_sent', time() );
+	$mail = nekoko_core_issue_verification( $user_id );
+	// A separate receipt per submission survives refreshes and cannot be consumed by another visitor.
+	$receipt = strtolower( wp_generate_password( 32, false, false ) );
+	set_transient( 'nekoko_registration_receipt_' . $receipt, array( 'mail_sent' => ! is_wp_error( $mail ) ), DAY_IN_SECONDS );
+	wp_safe_redirect( add_query_arg( 'registracija_zavrsena', $receipt, nekoko_core_page_url( 'registracija' ) ) ); exit;
 }
 add_action( 'template_redirect', 'nekoko_core_register_frontend_user', 3 );
+
+/** Set the portal member role on existing and newly deployed installations. */
+function nekoko_core_setup_default_member_role() {
+    nekoko_core_register_oglasivac_role();
+    if ( get_option( 'nekoko_default_member_role_version' ) === '1' ) { return; }
+    update_option( 'default_role', 'oglasivac' );
+    update_option( 'nekoko_default_member_role_version', '1', false );
+}
+add_action( 'init', 'nekoko_core_setup_default_member_role', 15 );

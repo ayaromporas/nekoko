@@ -63,16 +63,19 @@ function nekoko_core_classification_admin_assets() {
 add_action( 'admin_enqueue_scripts', 'nekoko_core_classification_admin_assets' );
 
 add_filter( 'manage_oglas_posts_columns', function( $columns ) {
-	return array( 'cb' => $columns['cb'] ?? '', 'title' => 'Naslov', 'author' => 'Autor', 'nekoko_branch' => 'Tip', 'nekoko_category' => 'Kategorija', 'nekoko_approval' => 'Odobren', 'date' => 'Datum' );
+	return array( 'cb' => $columns['cb'] ?? '', 'title' => 'Naslov', 'author' => 'Autor', 'nekoko_branch' => 'Tip', 'nekoko_category' => 'Kategorije', 'nekoko_subcategory' => 'Podkategorije', 'nekoko_approval' => 'Status', 'date' => 'Datum' );
 } );
 add_action( 'manage_oglas_posts_custom_column', function( $column, $post_id ) {
 	if ( 'nekoko_branch' === $column ) {
 		$result = nekoko_core_oglas_classification( $post_id );
 		if ( is_wp_error( $result ) ) { echo 'Nije izabrano'; return; }
 		echo '<a href="' . esc_url( add_query_arg( array( 'post_type' => 'oglas', 'nekoko_branch' => $result['root']->slug ), admin_url( 'edit.php' ) ) ) . '">' . esc_html( $result['root']->name ) . '</a>';
-	} elseif ( 'nekoko_category' === $column ) {
-		$paths = array_map( function( $term ) { return esc_html( nekoko_core_category_path( $term->term_id ) ); }, nekoko_core_oglas_categories( $post_id ) );
-		echo $paths ? implode( '<br>', $paths ) : '—';
+	} elseif ( in_array( $column, array( 'nekoko_category', 'nekoko_subcategory' ), true ) ) {
+        $selection = nekoko_core_listing_taxonomy_selection( $post_id );
+        $ids = 'nekoko_category' === $column ? $selection['categories'] : $selection['subcategories'];
+        $names = array();
+        foreach ( $ids as $id ) { $term = get_term( $id, 'kategorija_oglasa' ); if ( $term && ! is_wp_error( $term ) ) { $names[] = $term->name; } }
+        echo $names ? esc_html( implode( ', ', $names ) ) : '—';
 	}
 }, 10, 2 );
 
@@ -80,22 +83,31 @@ add_action( 'manage_oglas_posts_custom_column', function( $column, $post_id ) {
 	if ( 'nekoko_approval' !== $column ) {
 		return;
 	}
-	$approved = 'publish' === get_post_status( $post_id );
-	printf( '<label class="nekoko-listing-approval"><input type="checkbox" data-nekoko-listing-approval data-post-id="%1$d" %2$s aria-label="%3$s"><span data-nekoko-listing-approval-status>%4$s</span></label>', $post_id, checked( $approved, true, false ), esc_attr( $approved ? 'Oglas je odobren. Odznačite za vraćanje na čekanje.' : 'Oglas je na čekanju. Označite za odobravanje.' ), esc_html( $approved ? 'Odobren' : 'Na čekanju' ) );
+	$current = get_post_status( $post_id );
+	$status = in_array( $current, array( 'publish', 'reject' ), true ) ? $current : 'pending';
+	$disabled = ! current_user_can( 'manage_options' ) || ! current_user_can( 'edit_post', $post_id ) || 'trash' === $current;
+	echo '<fieldset class="nekoko-listing-status" data-post-id="' . absint( $post_id ) . '" data-current-status="' . esc_attr( $status ) . '" data-reject-url="' . esc_url( nekoko_core_rejection_admin_url( $post_id ) ) . '"><legend class="screen-reader-text">Status oglasa: ' . esc_html( get_the_title( $post_id ) ) . '</legend>';
+	foreach ( array( 'pending' => 'Na čekanju', 'publish' => 'Odobren', 'reject' => 'Odbijen' ) as $value => $label ) {
+		printf( '<label class="nekoko-listing-approval"><input type="radio" name="nekoko_status_%1$d" value="%2$s" data-nekoko-listing-status %3$s %4$s><span>%5$s</span></label>', $post_id, esc_attr( $value ), checked( $status, $value, false ), disabled( $disabled, true, false ), esc_html( $label ) );
+	}
+	echo '<span class="nekoko-listing-status-feedback" role="status" aria-live="polite"></span></fieldset>';
+	if ( ! $disabled && ( 'reject' === $current || get_post_meta( $post_id, '_nekoko_rejection', true ) ) ) { echo '<a href="' . esc_url( nekoko_core_rejection_admin_url( $post_id ) ) . '">Razlog odbijanja</a>'; }
 }, 10, 2 );
 
 function nekoko_core_toggle_listing_approval() {
 	check_ajax_referer( 'nekoko_listing_approval', 'nonce' );
 	$post_id  = absint( $_POST['post_id'] ?? 0 );
-	$approved = ! empty( $_POST['approved'] );
-	if ( ! $post_id || 'oglas' !== get_post_type( $post_id ) || ! current_user_can( 'edit_post', $post_id ) ) {
+	$status = isset( $_POST['status'] ) ? sanitize_key( $_POST['status'] ) : ( ! empty( $_POST['approved'] ) ? 'publish' : 'pending' );
+	$approved = 'publish' === $status;
+	if ( ! $post_id || 'oglas' !== get_post_type( $post_id ) || ( ! current_user_can( 'manage_options' ) || ! current_user_can( 'edit_post', $post_id ) ) ) {
 		wp_send_json_error( array( 'message' => 'Nemate dozvolu za izmenu ovog oglasa.' ), 403 );
 	}
-	$updated = wp_update_post( array( 'ID' => $post_id, 'post_status' => $approved ? 'publish' : 'draft' ), true );
+	if ( ! in_array( $status, array( 'publish', 'pending' ), true ) || 'trash' === get_post_status( $post_id ) ) { wp_send_json_error( array( 'message' => 'Za odbijanje oglasa unesite razlog odbijanja.' ), 400 ); }
+	$updated = wp_update_post( array( 'ID' => $post_id, 'post_status' => $status ), true );
 	if ( is_wp_error( $updated ) ) {
 		wp_send_json_error( array( 'message' => $updated->get_error_message() ), 500 );
 	}
-	wp_send_json_success( array( 'approved' => $approved, 'label' => $approved ? 'Odobren' : 'Na čekanju' ) );
+	wp_send_json_success( array( 'status' => $status, 'approved' => $approved, 'label' => $approved ? 'Odobren' : 'Na čekanju' ) );
 }
 add_action( 'wp_ajax_nekoko_toggle_listing_approval', 'nekoko_core_toggle_listing_approval' );
 

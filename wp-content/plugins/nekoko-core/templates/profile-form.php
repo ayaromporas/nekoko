@@ -3,13 +3,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$id             = get_current_user_id();
+$viewer_id      = get_current_user_id();
+$requested_id   = absint( $_GET['nekoko_edit_user'] ?? 0 );
+$is_admin_edit  = $requested_id && $requested_id !== $viewer_id && current_user_can( 'manage_options' ) && get_userdata( $requested_id );
+$id             = $is_admin_edit ? $requested_id : $viewer_id;
 $user           = get_userdata( $id );
 $errors         = get_transient( 'nekoko_profile_errors_' . $id );
 $notice         = get_transient( 'nekoko_profile_notice_' . $id );
 $password_error = get_transient( 'nekoko_profile_password_error_' . $id );
-$collaboration_notice = function_exists( 'nekoko_core_take_collaboration_notice' ) ? nekoko_core_take_collaboration_notice( $id ) : false;
-$incoming_collaborations = function_exists( 'nekoko_core_incoming_collaboration_requests' ) ? nekoko_core_incoming_collaboration_requests( $id ) : array();
 $phone_full     = preg_replace( '/\D+/', '', (string) get_user_meta( $id, 'nekoko_phone', true ) );
 $phone_country  = preg_replace( '/\D+/', '', (string) get_user_meta( $id, 'nekoko_phone_country', true ) );
 $countries      = nekoko_core_phone_countries();
@@ -38,7 +39,9 @@ delete_transient( 'nekoko_profile_notice_' . $id );
 delete_transient( 'nekoko_profile_password_error_' . $id );
 ?>
 <section class="nekoko-dashboard">
-	<h2>Moj profil</h2>
+<?php echo nekoko_core_template( 'email-verification-box' ); ?>
+	<h2><?php echo $is_admin_edit ? 'Uredite profil korisnika: ' . esc_html( $user->display_name ) : 'Moj profil'; ?></h2>
+	<?php if ( $is_admin_edit ) : ?><p class="nekoko-form__help">Administratorsko uređivanje profila. Izmene se primenjuju direktno na ovaj korisnički nalog.</p><?php endif; ?>
 	<p class="nekoko-public-profile-link"><a class="button" href="<?php echo esc_url( get_author_posts_url( $id ) ); ?>">Pogledaj javni profil</a></p>
 	<?php
 	if ( $notice ) {
@@ -50,14 +53,12 @@ delete_transient( 'nekoko_profile_password_error_' . $id );
 	if ( $password_error ) {
 		echo nekoko_core_form_notice( $password_error, 'error' );
 	}
-	if ( $collaboration_notice ) {
-		echo nekoko_core_form_notice( $collaboration_notice['message'], 'error' === $collaboration_notice['type'] ? 'error' : 'success' );
-	}
 	?>
 
 	<form class="nekoko-form" method="post" action="" enctype="multipart/form-data">
 		<?php wp_nonce_field( 'nekoko_profile_form' ); ?>
 		<input type="hidden" name="nekoko_profile_form" value="1">
+		<input type="hidden" name="nekoko_profile_user_id" value="<?php echo esc_attr( $id ); ?>">
 		<p><label>Korisničko ime</label><input value="<?php echo esc_attr( $user->user_login ); ?>" disabled></p>
 		<p><label>Ime *<input name="first_name" required autocomplete="given-name" value="<?php echo esc_attr( $user->first_name ); ?>"></label></p>
 		<p><label>Prezime *<input name="last_name" required autocomplete="family-name" value="<?php echo esc_attr( $user->last_name ); ?>"></label></p>
@@ -69,7 +70,7 @@ delete_transient( 'nekoko_profile_password_error_' . $id );
 		</fieldset>
 		<p><label>Email adresa *<input type="email" name="user_email" required autocomplete="email" value="<?php echo esc_attr( $user->user_email ); ?>" aria-describedby="nekoko-email-validation" data-nekoko-validation-message="nekoko-email-validation"></label><span id="nekoko-email-validation" class="nekoko-form__validation" hidden>Email mora biti u formatu ime@domen.rs.</span></p>
 		<p><label><input type="checkbox" name="nekoko_show_email" value="1" <?php checked( get_user_meta( $id, 'nekoko_show_email', true ), '1' ); ?>> Dozvoljavam da se moj email vidi na mom profilu</label></p>
-		<p><label>Trenutna lozinka (samo za promenu emaila)<input type="password" name="current_password" autocomplete="current-password"></label></p>
+		<?php if ( ! $is_admin_edit ) : ?><p><label>Trenutna lozinka (samo za promenu emaila)<input type="password" name="current_password" autocomplete="current-password"></label></p><?php endif; ?>
 		<p class="nekoko-phone-field">
 			<span class="nekoko-phone-field__label">Telefon</span>
 			<span class="nekoko-phone-field__controls">
@@ -88,6 +89,8 @@ delete_transient( 'nekoko_profile_password_error_' . $id );
 		<p><label>Grad/opština<input name="nekoko_city" value="<?php echo esc_attr( get_user_meta( $id, 'nekoko_city', true ) ); ?>"></label></p>
 		<p><label><input type="checkbox" name="nekoko_show_city" value="1" <?php checked( get_user_meta( $id, 'nekoko_show_city', true ), '1' ); ?>> Dozvoljavam da se moja lokacija vidi na mom profilu</label></p>
 		<div class="nekoko-profile-image-field">
+			<p class="nekoko-form__help">Najveća dozvoljena veličina je 4 MB po slici. Za veće fajlove pokušajte ponovo sa manjom slikom.</p>
+			<input type="hidden" name="MAX_FILE_SIZE" value="4194304">
 			<span class="nekoko-file-input__label">Fotografije profila</span>
 			<?php if ( $profile_images ) { ?>
 				<div class="nekoko-profile-image-gallery" role="group" aria-label="Izbor glavne profilne fotografije">
@@ -109,34 +112,16 @@ delete_transient( 'nekoko_profile_password_error_' . $id );
 		<button type="submit">Sačuvajte profil</button>
 	</form>
 
-	<?php if ( $incoming_collaborations ) : ?>
-		<section class="nekoko-collaboration-requests" aria-labelledby="nekoko-collaboration-requests-title">
-			<h3 id="nekoko-collaboration-requests-title">Zahtevi za potvrdu saradnje</h3>
-			<p>Potvrdite samo saradnju koja je zaista realizovana. Nakon potvrde, korisnik može da ostavi recenziju za taj oglas.</p>
-			<div class="nekoko-collaboration-requests__list">
-				<?php foreach ( $incoming_collaborations as $collaboration ) : ?>
-					<article class="nekoko-collaboration-request">
-						<div><strong><?php echo esc_html( $collaboration->display_name ); ?></strong><span>za oglas „<?php echo esc_html( $collaboration->post_title ); ?>”</span></div>
-						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-							<?php wp_nonce_field( 'nekoko_confirm_collaboration_' . $collaboration->id ); ?><input type="hidden" name="action" value="nekoko_confirm_collaboration"><input type="hidden" name="collaboration_id" value="<?php echo esc_attr( $collaboration->id ); ?>">
-							<button type="submit">Potvrdi saradnju</button>
-						</form>
-					</article>
-				<?php endforeach; ?>
-			</div>
-		</section>
-	<?php endif; ?>
-
 	<?php if ( get_user_meta( $id, 'nekoko_pending_email', true ) ) { ?>
 		<p>Čeka potvrdu: <?php echo esc_html( get_user_meta( $id, 'nekoko_pending_email', true ) ); ?> · <a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'nekoko_cancel_email', '1', nekoko_core_page_url( 'moj-profil' ) ), 'nekoko_cancel_email' ) ); ?>">Otkažite promenu</a></p>
 	<?php } ?>
 
 	<form class="nekoko-form" method="post" action="">
-		<h3>Promenite lozinku</h3>
+		<h3><?php echo $is_admin_edit ? 'Postavite novu lozinku' : 'Promenite lozinku'; ?></h3>
 		<?php wp_nonce_field( 'nekoko_profile_password' ); ?>
 		<input type="hidden" name="nekoko_profile_password" value="1">
-		<p><label>Trenutna lozinka *<input type="password" name="current_password" required autocomplete="current-password"></label></p>
-		<p class="nekoko-profile-password-help"><a class="nekoko-profile-lost-password" href="<?php echo esc_url( wp_lostpassword_url() ); ?>">Zaboravili ste lozinku?</a></p>
+		<input type="hidden" name="nekoko_profile_user_id" value="<?php echo esc_attr( $id ); ?>">
+		<?php if ( ! $is_admin_edit ) : ?><p><label>Trenutna lozinka *<input type="password" name="current_password" required autocomplete="current-password"></label></p><p class="nekoko-profile-password-help"><a class="nekoko-profile-lost-password" href="<?php echo esc_url( wp_lostpassword_url() ); ?>">Zaboravili ste lozinku?</a></p><?php endif; ?>
 		<p><label>Nova lozinka *<input type="password" name="new_password" required minlength="10" autocomplete="new-password"></label></p>
 		<p><label>Ponovite novu lozinku *<input type="password" name="new_password_repeat" required minlength="10" autocomplete="new-password"></label></p>
 		<button type="submit">Promenite lozinku</button>

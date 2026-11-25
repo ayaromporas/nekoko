@@ -4,7 +4,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 function nekoko_core_listing_access() {
 	if ( ! is_page( 'postavite-oglas' ) ) { return; }
 	if ( ! is_user_logged_in() ) { nekoko_core_require_login( home_url( add_query_arg( array(), $GLOBALS['wp']->request ?? 'postavite-oglas' ) ) ); }
-	if ( ! nekoko_core_is_verified_user() ) { wp_die( wp_kses_post( nekoko_core_form_notice( 'Potvrdite email adresu pre postavljanja oglasa. <a href="' . esc_url( nekoko_core_page_url( 'prijava' ) ) . '">Zatražite novi link</a>.', 'error' ) ), 'Potvrdite email' ); }
 }
 add_action( 'template_redirect', 'nekoko_core_listing_access', 5 );
 

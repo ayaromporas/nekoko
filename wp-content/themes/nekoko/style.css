@@ -3,7 +3,7 @@ Theme Name: Nekoko
 Theme URI: https://example.com/nekoko
 Author: Nekoko
 Description: A clean, accessible starter theme for the Nekoko website.
-Version: 1.0.2
+Version: 1.1.0
 Requires at least: 6.0
 Requires PHP: 7.2
 Text Domain: nekoko
@@ -88,11 +88,28 @@ h3 { font-size: var(--nekoko-font-size-h3); }
 h4 { font-size: var(--nekoko-font-size-h4); }
 h5 { font-size: var(--nekoko-font-size-h5); }
 h6 { font-size: var(--nekoko-font-size-h6); }
+@media (max-width: 48rem) {
+	:root {
+		--nekoko-font-size-h1: 2.375rem;
+		--nekoko-font-size-h2: 1.875rem;
+		--nekoko-font-size-h3: 1.5rem;
+		--nekoko-font-size-h4: 1.25rem;
+		--nekoko-font-size-h5: 1.125rem;
+		--nekoko-font-size-h6: 1rem;
+	}
+}
+@media (max-width: 34rem) {
+	:root {
+		--nekoko-font-size-h1: 2.125rem;
+		--nekoko-font-size-h2: 1.625rem;
+		--nekoko-font-size-h3: 1.375rem;
+	}
+}
 p { font-size: var(--nekoko-font-size-body); }
 small, .has-small-font-size { font-size: var(--nekoko-font-size-small); }
 .nekoko-text-tiny, .has-nekoko-tiny-font-size { font-size: var(--nekoko-font-size-tiny); }
 .button,
-button:not(.menu-toggle),
+button:not(.menu-toggle):not(.header-account__trigger),
 input[type="button"],
 input[type="reset"],
 input[type="submit"],
@@ -110,8 +127,8 @@ input[type="submit"],
 }
 .button:hover,
 .button:focus,
-button:not(.menu-toggle):hover,
-button:not(.menu-toggle):focus,
+button:not(.menu-toggle):not(.header-account__trigger):hover,
+button:not(.menu-toggle):not(.header-account__trigger):focus,
 input[type="button"]:hover,
 input[type="button"]:focus,
 input[type="reset"]:hover,
@@ -337,9 +354,17 @@ input[type="submit"]:focus,
 .nekoko-public-profile__contact a { display: inline-flex; align-items: center; gap: .45rem; color: var(--nekoko-primary); text-decoration: none; }
 .nekoko-public-profile__contact svg { flex: 0 0 auto; width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
 .nekoko-public-profile__contact a:hover, .nekoko-public-profile__contact a:focus-visible { text-decoration: underline; }
+.nekoko-public-profile__verification { padding: .15rem .4rem; border-radius: 999px; font-size: .7rem; font-weight: 700; line-height: 1.2; text-decoration: none; }
+.nekoko-public-profile__verification--verified { background: #e5f8eb; color: #18733a; }
+.nekoko-public-profile__verification--unverified { background: #fff4e1; color: #925d00; }
 .nekoko-public-profile__reviews { display: inline-flex; align-items: center; gap: .3rem; margin: .45rem 0 0; color: #52677b; font-size: 1rem; }
 .nekoko-public-profile__reviews > span:first-child { color: var(--nekoko-secondary); font-size: 1.3rem; line-height: 1; }
 .nekoko-public-profile__reviews strong { color: var(--nekoko-ink); }
+.nekoko-public-profile__metrics { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem 1rem; }
+.nekoko-public-profile__collaborations { display: inline-flex; align-items: center; gap: .35rem; margin: .45rem 0 0; padding-left: 1rem; border-left: 1px solid var(--nekoko-border); color: #52677b; font-size: 1rem; }
+.nekoko-public-profile__collaborations > span { display: grid; place-items: center; width: 1.15rem; height: 1.15rem; border-radius: 50%; background: #e5f8eb; color: #218c43; font-size: .78rem; font-weight: 800; }
+.nekoko-public-profile__collaborations strong { color: var(--nekoko-ink); }
+.nekoko-public-profile__verified { display: inline-flex; align-items: center; gap: .35rem; margin: .65rem 0 0; color: #18733a; font-size: .84rem; font-weight: 700; }
 .nekoko-public-profile__header-bio { max-width: 42rem; margin: .8rem 0 0; color: var(--nekoko-muted); line-height: 1.55; }
 .nekoko-public-profile__gallery { display: grid; grid-template-columns: repeat(2, 4.8rem); gap: .6rem; margin-left: auto; }
 .nekoko-public-profile__gallery-button { display: block; padding: 0; border: 0; border-radius: .55rem; outline: 0; background: none; cursor: zoom-in; overflow: hidden; }
@@ -352,11 +377,41 @@ input[type="submit"]:focus,
 .nekoko-public-profile__gallery-dialog-close { position: absolute; z-index: 1; top: .65rem; right: .65rem; display: grid; place-items: center; width: 2.1rem; height: 2.1rem; padding: 0; border: 0; border-radius: 50%; background: #fff; color: #17233c; font-size: 1.45rem; line-height: 1; cursor: pointer; }
 .nekoko-public-profile__edit { position: absolute; top: 1.25rem; right: 1.25rem; display: inline-flex; align-items: center; min-height: 2.35rem; padding: .45rem .8rem; border: 1px solid var(--nekoko-primary); border-radius: .45rem; color: var(--nekoko-primary); font-size: .86rem; font-weight: 700; text-decoration: none; }
 .nekoko-public-profile__edit:hover, .nekoko-public-profile__edit:focus-visible { background: var(--nekoko-primary); color: #fff; text-decoration: none; }
+.nekoko-public-profile__message { position: absolute; top: 1.25rem; right: 1.25rem; display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; min-height: 2.8rem; padding: .6rem 1rem; border-radius: .55rem; background: var(--nekoko-secondary); color: #17233c; font-size: .9rem; font-weight: 800; text-decoration: none; white-space: nowrap; }
+.nekoko-public-profile__message:hover, .nekoko-public-profile__message:focus-visible { background: #e8a918; color: #17233c; text-decoration: none; }
+.nekoko-public-profile__actions { position: absolute; top: 1.25rem; right: 1.25rem; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .6rem; }
+.nekoko-public-profile__actions .nekoko-public-profile__message { position: static; }
+.nekoko-public-profile__collaboration-button { display: inline-flex; align-items: center; justify-content: center; min-height: 2.8rem; padding: .6rem 1rem; border: 1px solid var(--nekoko-primary); border-radius: .55rem; background: #fff; color: var(--nekoko-primary); font: inherit; font-size: .9rem; font-weight: 800; white-space: nowrap; cursor: pointer; }
+.nekoko-public-profile__collaboration-button:hover, .nekoko-public-profile__collaboration-button:focus-visible { background: var(--nekoko-primary); color: #fff; }
+.nekoko-public-profile__collaboration-dialog { width: min(calc(100% - 2rem), 38rem); max-height: calc(100% - 2rem); padding: 0; border: 0; border-radius: .8rem; background: #fff; color: #17233c; box-shadow: 0 1.25rem 3rem rgba(4, 28, 51, .32); }
+.nekoko-public-profile__collaboration-dialog::backdrop { background: rgba(7, 27, 45, .65); }
+.nekoko-public-profile__collaboration-dialog-box { position: relative; padding: 2rem; }
+.nekoko-public-profile__collaboration-dialog-box h2 { margin: 0; }
+.nekoko-public-profile__collaboration-dialog-box > p { margin: .55rem 0 1.25rem; color: #52677b; line-height: 1.5; }
+.nekoko-public-profile__collaboration-dialog-close { position: absolute; top: .65rem; right: .65rem; display: grid; place-items: center; width: 2rem; height: 2rem; padding: 0; border: 0; border-radius: 50%; background: #edf2f7; color: #17233c; font-size: 1.35rem; line-height: 1; cursor: pointer; }
+.nekoko-public-profile__collaboration-dialog-list { display: grid; gap: .6rem; max-height: min(45vh, 24rem); overflow-y: auto; }
+.nekoko-public-profile__collaboration-dialog-list form { margin: 0; }
+.nekoko-public-profile__collaboration-dialog-list button { width: 100%; padding: .75rem .9rem; border: 1px solid var(--nekoko-border); border-radius: .5rem; background: #fff; color: var(--nekoko-primary); font: inherit; font-weight: 700; text-align: left; cursor: pointer; }
+.nekoko-public-profile__collaboration-dialog-list button:hover, .nekoko-public-profile__collaboration-dialog-list button:focus-visible { border-color: var(--nekoko-primary); background: #f2f7fc; }
 .nekoko-public-profile__notice { margin: 1rem 0 0; padding: .8rem 1rem; border-radius: .5rem; background: #dcfce7; color: #14532d; }
 .nekoko-public-profile__notice--error { background: #fee2e2; color: #7f1d1d; }
 .nekoko-public-profile__details { margin-top: 1.5rem; padding: 1.5rem 2rem; border-radius: var(--nekoko-card-radius); background: #f5f2eb; }
 .nekoko-public-profile__details p { margin: 0; }
 .nekoko-public-profile__details p + p { margin-top: .75rem; }
+.nekoko-public-profile__review-list { margin-top: 1.5rem; padding: 1.5rem 2rem; border: 1px solid var(--nekoko-border); border-radius: var(--nekoko-card-radius); background: var(--nekoko-white); }
+.nekoko-public-profile__review-list h2 { margin: 0; font-size: 1.5rem; }
+.nekoko-public-profile__review-list h2 span { color: var(--nekoko-muted); font-size: .9em; font-weight: 600; }
+.nekoko-public-profile__review-items { display: grid; gap: 1rem; margin-top: 1rem; }
+.nekoko-public-profile__review { display: flex; gap: .85rem; padding-top: 1rem; border-top: 1px solid var(--nekoko-border); }
+.nekoko-public-profile__review:first-child { padding-top: 0; border-top: 0; }
+.nekoko-public-profile__review-avatar { flex: 0 0 auto; width: 3rem; height: 3rem; border-radius: 50%; object-fit: cover; }
+.nekoko-public-profile__review-body { min-width: 0; flex: 1; }
+.nekoko-public-profile__review-heading { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .65rem; }
+.nekoko-public-profile__review-heading time { margin-left: auto; color: var(--nekoko-muted); font-size: .78rem; }
+.nekoko-public-profile__review-stars { color: var(--nekoko-secondary); letter-spacing: .04em; }
+.nekoko-public-profile__review-listing { margin: .25rem 0 0; color: var(--nekoko-muted); font-size: .78rem; }
+.nekoko-public-profile__review-body > p:last-child { margin: .45rem 0 0; line-height: 1.5; }
+.nekoko-public-profile__review-empty { margin: .75rem 0 0; color: var(--nekoko-muted); }
 .nekoko-public-profile__listings { margin-top: 3rem; }
 .nekoko-public-profile__listing-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
 .nekoko-public-profile__listing { display: flex; flex-direction: column; padding: 1.25rem; border: 1px solid var(--nekoko-border); border-radius: var(--nekoko-card-radius); background: var(--nekoko-white); box-shadow: 0 .5rem 1.25rem rgba(31, 41, 55, .07); }
@@ -374,7 +429,8 @@ input[type="submit"]:focus,
 .nekoko-public-profile__collaboration-info { display: grid; place-items: center; width: 1.05rem; height: 1.05rem; border: 1px solid currentColor; border-radius: 50%; font-size: .72rem; font-style: normal; font-weight: 800; line-height: 1; cursor: help; }
 .nekoko-public-profile__collaboration-info:focus-visible { outline: 2px solid var(--nekoko-primary); outline-offset: 2px; }
 .nekoko-public-profile__collaboration-login { margin: 0 !important; font-size: .84rem !important; }
-@media (max-width: 48rem) { .nekoko-public-profile { margin: 1.5rem 1rem 3rem; }.nekoko-public-profile__header { align-items: flex-start; padding: 1.25rem; }.nekoko-public-profile__image { width: 5rem; height: 5rem; }.nekoko-public-profile__gallery { grid-template-columns: repeat(2, 3.8rem); gap: .45rem; }.nekoko-public-profile__gallery-image { width: 3.8rem; height: 3.8rem; }.nekoko-public-profile__listing-grid { grid-template-columns: 1fr; } }
+@media (max-width: 48rem) { .nekoko-public-profile { margin: 1.5rem 1rem 3rem; }.nekoko-public-profile__header { align-items: flex-start; padding: 1.25rem; }.nekoko-public-profile__image { width: 5rem; height: 5rem; }.nekoko-public-profile__gallery { grid-template-columns: repeat(2, 3.8rem); gap: .45rem; }.nekoko-public-profile__gallery-image { width: 3.8rem; height: 3.8rem; }.nekoko-public-profile__message { position: static; width: auto; margin-left: auto; }.nekoko-public-profile__review-list { padding: 1.25rem; }.nekoko-public-profile__listing-grid { grid-template-columns: 1fr; } }
+@media (max-width: 48rem) { .nekoko-public-profile__actions { position: static; margin-left: auto; }.nekoko-public-profile__actions .nekoko-public-profile__message { margin-left: 0; } }
 @media (max-width: 34rem) { .nekoko-public-profile__header { flex-wrap: wrap; padding-top: 4.5rem; }.nekoko-public-profile__gallery { width: 100%; grid-template-columns: repeat(auto-fill, minmax(4rem, 1fr)); margin-top: 0; }.nekoko-public-profile__gallery-image { width: 100%; height: auto; aspect-ratio: 1; } }
 
 /* Full-width primary header and account navigation. */
@@ -397,12 +453,13 @@ input[type="submit"]:focus,
 .header-account__icon, .header-account__chevron { display: block; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
 .header-account__trigger .header-account__icon { width: 1.65rem; height: 1.65rem; }
 .header-account__chevron { width: 1rem; height: 1rem; margin-left: .1rem; transition: transform .18s ease; }
-.header-account:hover .header-account__chevron, .header-account:focus-within .header-account__chevron { transform: rotate(180deg); }
+.header-account.is-open .header-account__chevron { transform: rotate(180deg); }
 .header-account__dropdown { position: absolute; z-index: 50; top: calc(100% + .75rem); right: 0; display: grid; width: 15rem; padding: .65rem; border-radius: .8rem; background: var(--nekoko-white); box-shadow: 0 .75rem 1.5rem rgba(8, 31, 57, .18); color: #17233c; opacity: 0; pointer-events: none; transform: translateY(-.4rem); transition: opacity .18s ease, transform .18s ease; }
-.header-account:hover .header-account__dropdown, .header-account:focus-within .header-account__dropdown { opacity: 1; pointer-events: auto; transform: translateY(0); }
+.header-account.is-open .header-account__dropdown { opacity: 1; pointer-events: auto; transform: translateY(0); }
 .header-account__pointer { position: absolute; top: -.45rem; right: 1.45rem; width: .9rem; height: .9rem; transform: rotate(45deg); border-top: 1px solid #edf1f5; border-left: 1px solid #edf1f5; background: var(--nekoko-white); }
 .header-account__menu { display: grid; gap: .125rem; padding: 0; margin: 0; list-style: none; }
 .header-account__item a, .header-account__logout { display: flex; align-items: center; gap: .85rem; min-height: 2.65rem; padding: .55rem .65rem; border-radius: .55rem; color: inherit; font-size: .94rem; font-weight: 600; text-decoration: none; }
+.header-account__notification-dot { display: inline-block; flex: 0 0 auto; width: .55rem; height: .55rem; margin-left: auto; border-radius: 50%; background: var(--nekoko-secondary,#fbbf24); box-shadow: 0 0 0 .13rem rgba(251,191,36,.22); }
 .header-account__item a:hover, .header-account__item a:focus-visible, .header-account__logout:hover, .header-account__logout:focus-visible { background: #f2f6fa; color: var(--nekoko-primary); outline: none; }
 .header-account__item--post-ad a { background: #fff8e9; color: #17233c; }
 .header-account__item--post-ad a:hover, .header-account__item--post-ad a:focus-visible { background: #ffedc3; }
@@ -464,3 +521,47 @@ input[type="submit"]:focus,
 	padding-right: 3.15rem !important;
 }
 .header-account__trigger .header-account__chevron { margin-right: .15rem; }
+
+/* Let navigation and actions share available space without overlapping. */
+.site-branding { flex: 0 0 auto; }
+.site-header__content { flex-wrap: wrap; row-gap: 1rem; }
+.main-navigation { min-width: 0; flex: 1 1 24rem; }
+.primary-menu { flex-wrap: wrap; }
+.primary-menu > .menu-item { white-space: normal; }
+.header-actions { flex: 0 1 auto; max-width: 100%; min-width: 0; margin-left: auto; }
+.header-actions__post-ad, .header-account__trigger { flex-shrink: 0; }
+.header-search { min-width: 0; }
+.header-search__input { min-width: 0; }
+@media (max-width: 75rem) {
+    .site-header__content { grid-template-columns: minmax(0, 1fr); }
+    .primary-menu .sub-menu,
+    .primary-menu .sub-menu .menu-item-has-children > .sub-menu {
+        position: static; min-width: 0; width: auto; box-shadow: none;
+    }
+    .primary-menu > .menu-item.menu-item-has-children::after { display: none; }
+    .header-actions { margin-left: 0; }
+}
+.header-account__trigger { font-family: inherit; font-size: inherit; font-weight: 700; cursor: pointer; }
+.header-account__dropdown { visibility: hidden; }
+.header-account.is-open .header-account__dropdown { visibility: visible; }
+@media (max-width: 75rem) { .header-account:not(.is-open) .header-account__dropdown { display: none; } }
+
+/* Compact mobile heading scale, including template-specific hero titles. */
+@media (max-width: 48rem) {
+	.nekoko-advanced-search-hero h1,
+	.nekoko-offer-hero h1 {
+		font-size: var(--nekoko-font-size-h1) !important;
+	}
+	.nekoko-listing-single__header h1 {
+		font-size: 2.25rem !important;
+	}
+}
+@media (max-width: 34rem) {
+	.nekoko-listing-single__header h1 {
+		font-size: var(--nekoko-font-size-h1) !important;
+	}
+}
+
+/* Author identity on every advanced-search result card. */
+
+.header-verification-dot{display:inline-block;flex:0 0 auto;width:.6rem;height:.6rem;margin-left:.35rem;border-radius:50%;background:#d52e35;box-shadow:0 0 0 3px #d52e3522}.header-account__item .header-verification-dot{margin-left:auto}.menu-toggle>.header-verification-dot{position:absolute;top:.15rem;right:.15rem}

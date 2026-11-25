@@ -83,6 +83,28 @@
 	line-height: 1 !important;
 }
 
+/* Only the two compact actions below “Pošalji poruku” keep icon and text in one row. */
+.nekoko-listing-sidecard__actions > button {
+	display: inline-flex !important;
+	flex-direction: row !important;
+	flex-wrap: nowrap !important;
+	align-items: center !important;
+	justify-content: center !important;
+	gap: .55rem !important;
+	line-height: 1 !important;
+	white-space: nowrap;
+}
+.nekoko-listing-sidecard__actions > button > svg,
+.nekoko-listing-sidecard__actions > button > span {
+	display: block !important;
+	flex: 0 0 auto;
+	margin: 0 !important;
+}
+.nekoko-listing-sidecard__actions > button > svg {
+	width: 1.1rem;
+	height: 1.1rem;
+}
+
 .nekoko-listing-author-card__verified-email {
 	display: inline-flex;
 	align-items: center;
@@ -115,3 +137,7 @@
 
 /* Listing-specific verified reviews. */
 .nekoko-listing-reviews{margin-top:1.25rem;padding:1.35rem;border:1px solid #e3e8ed;border-radius:.85rem;background:#fff;box-shadow:0 .35rem 1.1rem rgba(18,43,68,.045)}.nekoko-listing-reviews h2{margin:0;color:#10192b;font-size:1.55rem}.nekoko-listing-reviews__notice{margin:.85rem 0 0;padding:.7rem .85rem;border-radius:.45rem;background:#dcfce7;color:#14532d;font-size:.9rem}.nekoko-listing-reviews__notice--error{background:#fee2e2;color:#7f1d1d}.nekoko-listing-reviews__login,.nekoko-listing-reviews__pending{margin:.8rem 0 0;color:#64748b;font-size:.92rem;line-height:1.45}.nekoko-listing-reviews__start{display:flex;flex-wrap:wrap;align-items:center;gap:.8rem;margin-top:1rem}.nekoko-listing-reviews__start p{flex:1 1 18rem;margin:0;color:#52677b;font-size:.9rem;line-height:1.4}.nekoko-listing-reviews__start button{padding:.65rem .95rem;border:0;border-radius:.5rem;background:#004682;color:#fff;font:inherit;font-weight:800;cursor:pointer}.nekoko-listing-review-form{display:grid;gap:.85rem;margin-top:1rem;padding:1rem;border-radius:.65rem;background:#f5f8fb}.nekoko-listing-review-form h3{margin:0;color:#17233c;font-size:1.05rem}.nekoko-listing-review-form fieldset{margin:0;padding:0;border:0}.nekoko-listing-review-form legend{margin-bottom:.35rem;font-size:.85rem;font-weight:800}.nekoko-listing-review-form__rating{display:flex;flex-direction:row-reverse;justify-content:flex-end;gap:.2rem}.nekoko-listing-review-form__rating label{cursor:pointer}.nekoko-listing-review-form__rating input{position:absolute;opacity:0}.nekoko-listing-review-form__rating span[aria-hidden=true]{color:#cbd5df;font-size:1.65rem;line-height:1}.nekoko-listing-review-form__rating label:hover span[aria-hidden=true],.nekoko-listing-review-form__rating label:hover~label span[aria-hidden=true],.nekoko-listing-review-form__rating input:checked~span[aria-hidden=true]{color:#f5b335}.nekoko-listing-review-form>label{display:grid;gap:.35rem;font-size:.85rem;font-weight:800}.nekoko-listing-review-form textarea{width:100%;min-height:7rem;padding:.7rem;border:1px solid #cbd5df;border-radius:.5rem;resize:vertical}.nekoko-listing-review-form button{justify-self:start;padding:.65rem .95rem;border:0;border-radius:.5rem;background:#004682;color:#fff;font:inherit;font-weight:800;cursor:pointer}.nekoko-listing-reviews__list{display:grid;gap:.85rem;margin-top:1rem}.nekoko-listing-review{padding:1rem 0;border-top:1px solid #e5ebf0}.nekoko-listing-review__author{display:flex;align-items:center;gap:.65rem}.nekoko-listing-review__author img{width:3rem;height:3rem;border-radius:50%;object-fit:cover}.nekoko-listing-review__author>div{display:grid;gap:.15rem}.nekoko-listing-review__author strong{color:#17233c;font-size:.92rem}.nekoko-listing-review__author time{color:#64748b;font-size:.76rem}.nekoko-listing-review__stars{margin-left:auto;color:#e5a41f;letter-spacing:.06em;font-size:1rem;white-space:nowrap}.nekoko-listing-review>p{margin:.75rem 0 0;color:#334155;font-size:.94rem;line-height:1.55}.nekoko-listing-reviews__empty{margin:.8rem 0 0;color:#64748b}@media(max-width:32rem){.nekoko-listing-review__author{align-items:flex-start}.nekoko-listing-review__stars{font-size:.85rem}}
+
+.nekoko-listing-single__quick-actions a.nekoko-listing-single__edit{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:2.75rem;background:#004682;border-color:#004682;color:#fff;text-decoration:none}.nekoko-listing-single__quick-actions a.nekoko-listing-single__edit:hover{background:#003663;color:#fff}.nekoko-listing-single__edit:focus-visible{outline:3px solid #efb849;outline-offset:3px}
+
+.nekoko-listing-visibility{margin:0 0 1.25rem;padding:1rem 1.25rem;border:1px solid #efcf89;border-left:4px solid #f5b335;border-radius:.65rem;background:#fff8e8;color:#5f481b}.nekoko-listing-visibility strong{display:block;font-size:1rem}.nekoko-listing-visibility p{margin:.45rem 0 0;font-size:.9rem;line-height:1.6}

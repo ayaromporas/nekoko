@@ -2,7 +2,14 @@
 .nekoko-classification-tree li { margin-block: .4rem; }
 .nekoko-classification-tree:empty { display: none; }
 .nekoko-classification [hidden] { display: none; }
-.column-nekoko_approval { width: 8.5rem; }
+.column-nekoko_approval { width: 12rem; }
 .nekoko-listing-approval { display: inline-flex; align-items: center; gap: .45rem; font-weight: 600; white-space: nowrap; }
 .nekoko-listing-approval input { width: 1.1rem; height: 1.1rem; margin: 0; accent-color: #2271b1; }
 .nekoko-listing-approval input:disabled { opacity: .55; }
+.nekoko-listing-status{display:flex;flex-direction:column;align-items:flex-start;gap:.5rem;margin:0 0 .5rem;padding:0;border:0}.nekoko-listing-status-feedback{font-size:12px;white-space:normal}.nekoko-listing-status-feedback:empty{display:none}
+
+/* Reserve room for moderation controls in the listing table. */
+.post-type-oglas .wp-list-table .column-author { width: 8%; }
+.post-type-oglas .wp-list-table .column-nekoko_branch { width: 6%; }
+.post-type-oglas .wp-list-table .column-nekoko_approval { width: 12rem; }
+.post-type-oglas .column-nekoko_approval > a { display: inline-block; white-space: nowrap; }

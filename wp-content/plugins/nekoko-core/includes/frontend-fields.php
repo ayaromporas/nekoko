@@ -32,10 +32,9 @@ function nekoko_core_register_frontend_fields() {
 		array( 'key' => 'field_nekoko_profile_page', 'label' => 'Stranica Moj profil', 'name' => 'nekoko_profile_page', 'type' => 'page_link', 'post_type' => array( 'page' ), 'allow_null' => 1 ),
 	) ) ); }
 	if ( $listings ) { acf_add_local_field_group( array( 'key' => 'group_nekoko_listing_options', 'title' => 'Oglasi', 'active' => true, 'location' => array( array( array( 'param' => 'options_page', 'operator' => '==', 'value' => $listings['menu_slug'] ) ) ), 'fields' => array(
-		array( 'key' => 'field_nekoko_listing_status', 'label' => 'Status novog oglasa', 'name' => 'nekoko_listing_status', 'type' => 'select', 'choices' => array( 'pending' => 'Čeka odobrenje', 'publish' => 'Odmah objavljen' ), 'default_value' => 'pending', 'return_format' => 'value' ),
 		array( 'key' => 'field_nekoko_listing_success', 'label' => 'Poruka nakon uspešnog slanja', 'name' => 'nekoko_listing_success', 'type' => 'text', 'default_value' => 'Oglas je uspešno sačuvan.' ),
 		array( 'key' => 'field_nekoko_max_images', 'label' => 'Maksimalan broj slika', 'name' => 'nekoko_max_images', 'type' => 'number', 'default_value' => 6, 'min' => 1, 'max' => 12 ),
-		array( 'key' => 'field_nekoko_max_image_size', 'label' => 'Maksimalna veličina slike (MB)', 'name' => 'nekoko_max_image_size', 'type' => 'number', 'default_value' => 5, 'min' => 1, 'max' => 20 ),
+		array( 'key' => 'field_nekoko_max_image_size', 'label' => 'Maksimalna veličina slike (MB)', 'name' => 'nekoko_max_image_size', 'type' => 'number', 'default_value' => 4, 'min' => 4, 'max' => 4 ),
 	) ) ); }
 	if ( $information ) { acf_add_local_field_group( array( 'key' => 'group_nekoko_information_options', 'title' => 'Informacije za korisnike', 'active' => true, 'location' => array( array( array( 'param' => 'options_page', 'operator' => '==', 'value' => $information['menu_slug'] ) ) ), 'fields' => array(
 		array( 'key' => 'field_nekoko_pending_listing_label', 'label' => 'Oznaka oglasa koji čeka odobrenje', 'name' => 'nekoko_pending_listing_label', 'type' => 'text', 'default_value' => 'Čeka odobrenje' ),

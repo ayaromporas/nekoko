@@ -63,3 +63,25 @@ function nekoko_core_redirect_to_contact_form() {
 	wp_safe_redirect( admin_url( 'admin.php?page=wpcf7' ) );
 	exit;
 }
+
+/** Preserve the original status option across file-only deployments. */
+function nekoko_core_listing_auto_approval_enabled() {
+    return in_array( get_option( 'options_nekoko_listing_status', 'pending' ), array( 'publish', '1', 1, true ), true );
+}
+function nekoko_core_register_moderation_setting() {
+    if ( ! function_exists( 'acf_add_local_field_group' ) ) { return; }
+    acf_add_local_field_group( array(
+        'key' => 'group_nekoko_moderation_settings', 'title' => 'Odobravanje oglasa',
+        'location' => array( array( array( 'param' => 'options_page', 'operator' => '==', 'value' => 'nekoko-settings-general' ) ) ),
+        'fields' => array( array(
+            'key' => 'field_nekoko_listing_status', 'name' => 'nekoko_listing_status',
+            'label' => 'Automatsko odobravanje oglasa', 'type' => 'true_false',
+            'ui' => 1, 'ui_on_text' => 'Uključeno', 'ui_off_text' => 'Isključeno', 'default_value' => 0,
+            'instructions' => 'Uključeno: samo novi oglasi napravljeni dok je prekidač uključen odmah se objavljuju. Isključeno: novi oglasi članova čekaju ručno odobrenje administratora. Svaka izmena postojećeg oglasa vraća ga na čekanje i zahteva ponovno odobrenje, bez obzira na ovaj prekidač. Ručno odobravanje ostaje dostupno. Nakon izmene sačuvajte podešavanja.',
+        ) ),
+    ) );
+}
+add_action( 'acf/init', 'nekoko_core_register_moderation_setting', 31 );
+add_filter( 'acf/load_value/key=field_nekoko_listing_status', static function( $value ) {
+    return in_array( $value, array( 'publish', '1', 1, true ), true ) ? 1 : 0;
+} );

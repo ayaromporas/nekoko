@@ -52,7 +52,7 @@ function nekoko_core_classify_categories( $raw ) {
 		if ( ! is_scalar( $id ) || ! ctype_digit( (string) $id ) || (int) $id < 1 ) { return $error; }
 		$root = nekoko_core_category_root( $id );
 		if ( ! $root ) { return $error; }
-		$ids[] = (int) $id;
+		$ids[] = (int) $id; $ids = array_merge( $ids, array_map( 'intval', get_ancestors( (int) $id, 'kategorija_oglasa', 'taxonomy' ) ) );
 		$roots[ $root->term_id ] = $root;
 	}
 	if ( count( $roots ) !== 1 ) { return $error; }
@@ -69,23 +69,40 @@ function nekoko_core_oglas_classification( $post_id ) {
 
 /** Return the three taxonomy selections used by the public listing form. */
 function nekoko_core_listing_taxonomy_selection( $post_id ) {
-	$selection = array( 'branch' => '', 'category' => 0, 'subcategory' => 0 );
-	$classification = nekoko_core_oglas_classification( $post_id );
-	if ( is_wp_error( $classification ) || empty( $classification['root'] ) ) { return $selection; }
-
-	$root = $classification['root'];
-	$selection['branch'] = $root->slug;
-	$terms = wp_get_object_terms( $post_id, 'kategorija_oglasa' );
-	if ( is_wp_error( $terms ) ) { return $selection; }
-
-	foreach ( $terms as $term ) {
-		if ( (int) $term->parent === (int) $root->term_id ) { $selection['category'] = (int) $term->term_id; continue; }
-		$parent = $term->parent ? get_term( $term->parent, 'kategorija_oglasa' ) : null;
-		if ( $parent && ! is_wp_error( $parent ) && (int) $parent->parent === (int) $root->term_id ) { $selection['category'] = (int) $parent->term_id; $selection['subcategory'] = (int) $term->term_id; }
-	}
-	return $selection;
+    $selection = array( 'branch' => '', 'category' => 0, 'subcategory' => 0, 'categories' => array(), 'subcategories' => array() );
+    $classification = nekoko_core_oglas_classification( $post_id );
+    if ( is_wp_error( $classification ) ) { return $selection; }
+    $root = $classification['root']; $selection['branch'] = $root->slug;
+    foreach ( $classification['ids'] as $id ) {
+        $term = get_term( $id, 'kategorija_oglasa' );
+        if ( ! $term || is_wp_error( $term ) || ! $term->parent ) { continue; }
+        if ( (int) $term->parent === (int) $root->term_id ) { $selection['categories'][] = (int) $id; }
+        else { $selection['subcategories'][] = (int) $id; }
+    }
+    $selection['category'] = $selection['categories'] ? $selection['categories'][0] : 0;
+    $selection['subcategory'] = $selection['subcategories'] ? $selection['subcategories'][0] : 0;
+    return $selection;
 }
 
+/** Validate all selected parents and children without silently dropping extra IDs. */
+function nekoko_core_classify_form_categories( $branch, $categories, $subcategories ) {
+    $error = new WP_Error( 'invalid_selection', 'Izaberite najmanje jednu kategoriju i podkategorije samo iz izabranih kategorija i istog tipa oglasa.' );
+    if ( ! is_array( $categories ) || ! $categories || ! is_array( $subcategories ) ) { return $error; }
+    $roots = nekoko_core_category_roots(); $root = $roots[ $branch ] ?? false;
+    if ( ! $root ) { return $error; }
+    $result = nekoko_core_classify_categories( array_merge( $categories, $subcategories ) );
+    if ( is_wp_error( $result ) || $result['root']->slug !== $branch ) { return $error; }
+    $parents = array_map( 'intval', $categories );
+    foreach ( $parents as $id ) {
+        $term = get_term( $id, 'kategorija_oglasa' );
+        if ( ! $term || is_wp_error( $term ) || (int) $term->parent !== (int) $root->term_id ) { return $error; }
+    }
+    foreach ( $subcategories as $id ) {
+        $term = get_term( (int) $id, 'kategorija_oglasa' );
+        if ( ! $term || is_wp_error( $term ) || (int) $term->parent === (int) $root->term_id || ! array_intersect( $parents, get_ancestors( (int) $id, 'kategorija_oglasa', 'taxonomy' ) ) ) { return $error; }
+    }
+    return $result;
+}
 /** Keep only the deepest assigned paths, so parent names are not repeated. */
 function nekoko_core_oglas_categories( $post_id ) {
 	$terms = wp_get_object_terms( $post_id, 'kategorija_oglasa' );

@@ -1,7 +1,11 @@
 <?php
 /** Site header. @package Nekoko */
+$nekoko_needs_verification = is_user_logged_in() && function_exists( 'nekoko_core_is_verified_user' ) && ! nekoko_core_is_verified_user();
+$nekoko_verification_dot = '<span class="header-verification-dot"><span class="screen-reader-text">Potvrdite email adresu</span></span>';
 $nekoko_unread = function_exists( 'nekoko_core_unread_messages' ) && nekoko_core_unread_messages();
+$nekoko_pending_collaboration = is_user_logged_in() && function_exists( 'nekoko_core_has_incoming_collaboration_requests' ) && nekoko_core_has_incoming_collaboration_requests( get_current_user_id() );
 $nekoko_dot = '<span class="nekoko-unread-dot"><span class="screen-reader-text">Nepročitane poruke</span></span>';
+$nekoko_collaboration_dot = '<span class="header-account__notification-dot"><span class="screen-reader-text">Imate zahteve za saradnju na čekanju</span></span>';
 ?><!doctype html>
 <html <?php language_attributes(); ?>>
 <head>
@@ -17,7 +21,7 @@ $nekoko_dot = '<span class="nekoko-unread-dot"><span class="screen-reader-text">
 		<?php if ( has_custom_logo() ) { the_custom_logo(); } ?>
 	</div>
 	<button class="menu-toggle" type="button" aria-controls="header-menu-panel" aria-expanded="false" aria-label="Otvori meni">
-		<?php if ( $nekoko_unread ) { echo $nekoko_dot; } ?><span class="menu-toggle__icon" aria-hidden="true"><span></span><span></span><span></span></span>
+		<?php if ( $nekoko_needs_verification ) { echo $nekoko_verification_dot; } elseif ( $nekoko_unread ) { echo $nekoko_dot; } ?><span class="menu-toggle__icon" aria-hidden="true"><span></span><span></span><span></span></span>
 	</button>
 	<div id="header-menu-panel" class="site-header__content">
 		<nav class="main-navigation" aria-label="Glavni meni">
@@ -39,16 +43,16 @@ $nekoko_dot = '<span class="nekoko-unread-dot"><span class="screen-reader-text">
 			<?php if ( is_user_logged_in() ) : ?>
 				<?php $nekoko_account = nekoko_header_account_menu(); ?>
 				<div class="header-account">
-					<a class="header-account__trigger" href="<?php echo esc_url( $nekoko_account['profile_url'] ); ?>" aria-haspopup="true">
+					<button class="header-account__trigger" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="header-account-dropdown">
 						<?php echo nekoko_header_account_icon( 'profile' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted inline SVG. ?>
-						<span><?php esc_html_e( 'Moj nalog', 'nekoko' ); ?></span><?php if ( $nekoko_unread ) { echo $nekoko_dot; } ?>
+						<span><?php esc_html_e( 'Moj nalog', 'nekoko' ); ?></span><?php if ( $nekoko_needs_verification ) { echo $nekoko_verification_dot; } elseif ( $nekoko_unread ) { echo $nekoko_dot; } ?>
 						<svg class="header-account__chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>
-					</a>
-					<div class="header-account__dropdown">
+					</button>
+					<div id="header-account-dropdown" class="header-account__dropdown">
 						<span class="header-account__pointer" aria-hidden="true"></span>
 						<ul class="header-account__menu">
 							<?php foreach ( $nekoko_account['items'] as $nekoko_item ) : ?>
-								<li class="header-account__item header-account__item--<?php echo esc_attr( $nekoko_item['icon'] ); ?>"><a href="<?php echo esc_url( $nekoko_item['url'] ); ?>"><?php echo nekoko_header_account_icon( $nekoko_item['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted inline SVG. ?><span><?php echo esc_html( $nekoko_item['label'] ); ?></span><?php if ( $nekoko_unread && 'messages' === $nekoko_item['icon'] ) { echo $nekoko_dot; } ?></a></li>
+								<li class="header-account__item header-account__item--<?php echo esc_attr( $nekoko_item['icon'] ); ?>"><a href="<?php echo esc_url( $nekoko_item['url'] ); ?>"><?php echo nekoko_header_account_icon( $nekoko_item['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted inline SVG. ?><span><?php echo esc_html( $nekoko_item['label'] ); ?></span><?php if ( $nekoko_needs_verification && 'profile' === $nekoko_item['icon'] ) { echo $nekoko_verification_dot; } ?><?php if ( $nekoko_unread && 'messages' === $nekoko_item['icon'] ) { echo $nekoko_dot; } ?><?php if ( $nekoko_pending_collaboration && 'collaboration' === $nekoko_item['icon'] ) { echo $nekoko_collaboration_dot; } ?></a></li>
 							<?php endforeach; ?>
 						</ul>
 						<a class="header-account__logout" href="<?php echo esc_url( $nekoko_account['logout_url'] ); ?>"><?php echo nekoko_header_account_icon( 'logout' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted inline SVG. ?><span><?php echo esc_html( $nekoko_account['logout_label'] ); ?></span></a>

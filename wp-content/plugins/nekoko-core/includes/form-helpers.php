@@ -65,10 +65,38 @@ function nekoko_core_current_user_can_manage_listing( $post_id ) {
 	return $post && 'oglas' === $post->post_type && ( current_user_can( 'manage_options' ) || ( get_current_user_id() && (int) $post->post_author === get_current_user_id() ) );
 }
 
+function nekoko_core_reject_oversized_image_request() {
+	if ( 'POST' !== ( $_SERVER['REQUEST_METHOD'] ?? '' ) || ! is_page( array( 'moj-profil', 'postavite-oglas' ) ) ) { return; }
+	$limit = wp_convert_hr_to_bytes( ini_get( 'post_max_size' ) );
+	if ( $limit && (float) ( $_SERVER['CONTENT_LENGTH'] ?? 0 ) > $limit ) {
+		wp_die( 'Ukupna veličina poslatih slika je prevelika. Svaka slika sme imati najviše 4 MB. Pokušajte ponovo sa manjim slikama ili pošaljite manje slika odjednom.', 'Slike su prevelike', array( 'response' => 413, 'back_link' => true ) );
+	}
+}
+add_action( 'template_redirect', 'nekoko_core_reject_oversized_image_request', 0 );
+
+function nekoko_core_image_size_error() {
+	return new WP_Error( 'image_size', 'Slika je veća od dozvoljene veličine fajla (4 MB). Pokušajte ponovo sa manjom slikom.' );
+}
+
+/** Validate the whole selection before processing any image or changing content. */
+function nekoko_core_validate_image_uploads( $field ) {
+	if ( empty( $_FILES[ $field ]['name'] ) ) { return true; }
+	$files = $_FILES[ $field ];
+	foreach ( (array) $files['name'] as $index => $name ) {
+		if ( ! $name ) { continue; }
+		$error = (int) ( is_array( $files['error'] ) ? $files['error'][ $index ] : $files['error'] );
+		$size = (int) ( is_array( $files['size'] ) ? $files['size'][ $index ] : $files['size'] );
+		if ( in_array( $error, array( UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE ), true ) || $size > 4 * MB_IN_BYTES ) { return nekoko_core_image_size_error(); }
+		if ( UPLOAD_ERR_OK !== $error ) { return new WP_Error( 'upload_error', 'Slika nije uspešno otpremljena. Pokušajte ponovo sa manjom slikom.' ); }
+	}
+	return true;
+}
+
 function nekoko_core_handle_user_image_file( $file, $user_id, $post_id = 0 ) {
+	if ( in_array( (int) ( $file['error'] ?? 0 ), array( UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE ), true ) || (int) ( $file['size'] ?? 0 ) > 4 * MB_IN_BYTES ) { return nekoko_core_image_size_error(); }
 	if ( empty( $file['name'] ) || UPLOAD_ERR_NO_FILE === (int) ( $file['error'] ?? UPLOAD_ERR_NO_FILE ) ) { return 0; }
 	if ( UPLOAD_ERR_OK !== (int) $file['error'] ) { return new WP_Error( 'upload_error', 'Slika nije uspešno otpremljena.' ); }
-	$max = max( 1, (int) nekoko_core_option( 'nekoko_max_image_size', 5 ) ) * MB_IN_BYTES;
+	$max = 4 * MB_IN_BYTES;
 	if ( (int) $file['size'] > $max ) { return new WP_Error( 'image_size', 'Slika je veća od dozvoljene veličine.' ); }
 	$info = wp_check_filetype_and_ext( $file['tmp_name'], $file['name'] );
 	if ( ! in_array( $info['type'] ?? '', array( 'image/jpeg', 'image/png', 'image/webp' ), true ) ) { return new WP_Error( 'image_type', 'Dozvoljene su samo JPG, PNG i WebP slike.' ); }

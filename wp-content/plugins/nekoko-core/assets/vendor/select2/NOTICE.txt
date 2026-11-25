@@ -1,0 +1,6 @@
+Select2 4.0.13 (including the focus fix distributed with ACF).
+Source: the installed ACF Select2 distribution, assets/inc/select2/4.
+Project: https://github.com/select2/select2
+License: MIT, https://github.com/select2/select2/blob/4.0.13/LICENSE.md
+The original JavaScript license banner is preserved in select2.full.min.js.
+These local assets are loaded only on the portal listing form.

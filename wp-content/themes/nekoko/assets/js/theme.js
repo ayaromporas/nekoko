@@ -2,7 +2,7 @@
 	'use strict';
 	var toggle = document.querySelector( '.menu-toggle' );
 	var panel = document.getElementById( 'header-menu-panel' );
-	var mobile = window.matchMedia( '(max-width: 64rem)' );
+	var mobile = window.matchMedia( '(max-width: 75rem)' );
 
 	if ( ! toggle || ! panel ) { return; }
 
@@ -55,3 +55,24 @@
 		}
 	} );
 }() );
+
+/* Account control only opens its dropdown. */
+(function(){
+'use strict';
+var account=document.querySelector('.header-account');
+if(!account)return;
+var button=account.querySelector('button.header-account__trigger'),dropdown=account.querySelector('.header-account__dropdown');
+if(!button||!dropdown)return;
+var pinned=false,holdTimer,held=false;
+function open(value){account.classList.toggle('is-open',value);button.setAttribute('aria-expanded',String(value));}
+button.addEventListener('click',function(){if(held){held=false;return;}pinned=!pinned;open(pinned);});
+account.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse')open(true);});
+account.addEventListener('pointerleave',function(e){if(e.pointerType==='mouse'&&!pinned)open(false);});
+button.addEventListener('pointerdown',function(e){held=false;if(e.pointerType==='touch'||e.pointerType==='pen'){holdTimer=window.setTimeout(function(){held=true;pinned=true;open(true);},500);}});
+button.addEventListener('pointerup',function(){window.clearTimeout(holdTimer);});
+button.addEventListener('pointercancel',function(){window.clearTimeout(holdTimer);held=false;});
+button.addEventListener('contextmenu',function(e){e.preventDefault();pinned=true;open(true);});
+document.addEventListener('click',function(e){if(!account.contains(e.target)){pinned=false;open(false);}});
+account.addEventListener('focusout',function(e){if(!account.contains(e.relatedTarget)){pinned=false;open(false);}});
+account.addEventListener('keydown',function(e){if(e.key==='Escape'){e.preventDefault();pinned=false;open(false);button.focus();}if(e.key==='ArrowDown'&&e.target===button){e.preventDefault();pinned=true;open(true);var link=dropdown.querySelector('a');if(link)link.focus();}});
+}());

@@ -16,11 +16,12 @@ $pending_info = nekoko_core_option( 'nekoko_pending_listing_info', 'Vaš oglas �
 			$type = nekoko_core_oglas_classification( $listing->ID );
 			// Published ads open publicly; unpublished ones open a front-end preview for their owner.
 			$public_url = 'publish' === $listing->post_status ? get_permalink( $listing ) : get_preview_post_link( $listing );
-			$is_pending = in_array( $listing->post_status, array( 'pending', 'draft' ), true );
+			$rejection = 'reject' === $listing->post_status ? get_post_meta( $listing->ID, '_nekoko_rejection', true ) : array();
+		$is_pending = in_array( $listing->post_status, array( 'pending', 'draft' ), true );
 		?>
 			<article class="nekoko-listing-card">
 				<?php if ( $public_url ) : ?><a class="nekoko-listing-card__link" href="<?php echo esc_url( $public_url ); ?>" aria-label="<?php echo esc_attr( $listing->post_title ); ?>"></a><?php endif; ?>
-				<div class="nekoko-listing-card__image">
+				<div class="nekoko-listing-card__image"><?php if ( 'reject' === $listing->post_status ) : ?><span class="nekoko-listing-card__pending-ribbon nekoko-listing-card__rejected-ribbon">Odbijen</span><?php endif; ?>
 					<?php if ( $is_pending ) : ?><span class="nekoko-listing-card__pending-ribbon"><?php echo esc_html( $pending_label ); ?><button type="button" class="nekoko-listing-card__info" aria-label="Informacija o odobravanju oglasa"><span aria-hidden="true">i</span><span class="nekoko-listing-card__tooltip" role="tooltip"><?php echo esc_html( $pending_info ); ?></span></button></span><?php endif; ?>
 					<?php if ( has_post_thumbnail( $listing ) ) : ?>
 						<?php echo get_the_post_thumbnail( $listing, 'medium_large', array( 'alt' => '' ) ); ?>
@@ -28,12 +29,13 @@ $pending_info = nekoko_core_option( 'nekoko_pending_listing_info', 'Vaš oglas �
 				</div>
 				<div class="nekoko-listing-card__body">
 					<p class="nekoko-listing-card__type"><?php echo esc_html( is_array( $type ) ? $type['root']->name : 'Oglas' ); ?></p>
-					<h3><?php echo esc_html( $listing->post_title ); ?></h3>
+					<h3><?php echo esc_html( $listing->post_title ); ?></h3><?php if ( ! empty( $rejection['reason'] ) ) : ?><div class="nekoko-listing-card__rejection"><strong>Razlog odbijanja:</strong><p><?php echo nl2br( esc_html( $rejection['reason'] ) ); ?></p></div><?php endif; ?>
 					<p class="nekoko-listing-card__category"><?php echo esc_html( $categories ? $categories[0]->name : 'Bez kategorije' ); ?></p>
 					<p class="nekoko-listing-card__meta"><?php echo esc_html( get_the_date( 'j. F Y.', $listing ) ); ?><?php if ( ! $is_pending ) : ?> · <?php echo esc_html( $labels[ $listing->post_status ] ?? $listing->post_status ); ?><?php endif; ?></p>
-					<div class="nekoko-listing-card__actions">
+					<?php if ( 'publish' !== $listing->post_status ) : ?><p class="nekoko-listing-card__visibility">Oglas vide samo ulogovani autor i administratori. Drugim posetiocima ovaj link prikazuje 404 sve dok oglas ne bude odobren i objavljen.</p><?php endif; ?>
+                    <div class="nekoko-listing-card__actions">
 						<?php if ( $public_url ) : ?><a href="<?php echo esc_url( $public_url ); ?>">Pogledajte</a><?php endif; ?>
-						<a class="nekoko-listing-card__action--edit" href="<?php echo esc_url( add_query_arg( 'oglas_id', $listing->ID, nekoko_core_page_url( 'postavite-oglas' ) ) ); ?>">Izmenite</a>
+						<a class="nekoko-listing-card__action--edit" href="<?php echo esc_url( add_query_arg( 'oglas_id', $listing->ID, nekoko_core_page_url( 'postavite-oglas' ) ) ); ?>"><?php echo 'reject' === $listing->post_status ? 'Izmeni i pošalji ponovo' : 'Izmenite'; ?></a>
 						<a class="nekoko-listing-card__action--delete" data-nekoko-confirm="Da li želite da premestite oglas u otpad?" href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'nekoko_delete_listing', $listing->ID, nekoko_core_page_url( 'moji-oglasi' ) ), 'nekoko_delete_listing_' . $listing->ID ) ); ?>">Obrišite</a>
 					</div>
 				</div>

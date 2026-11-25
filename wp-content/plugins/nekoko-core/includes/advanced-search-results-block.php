@@ -149,7 +149,7 @@ function nekoko_core_advanced_search_card_categories( $post_id ) {
 function nekoko_core_advanced_search_results_html( $params, $empty ) {
 	$query = nekoko_core_advanced_search_query( $params ); ob_start();
 	if ( $query->have_posts() ) : while ( $query->have_posts() ) : $query->the_post();
-		$id = get_the_ID(); $card_categories = nekoko_core_advanced_search_card_categories( $id ); $root = $card_categories['root']; $demand = $root && 'potraznja' === $root->slug; $pill_class = $demand ? ' nekoko-advanced-results__pill--demand' : ''; $category_names = array_map( static function( $category ) { return $category->name; }, $card_categories['categories'] ); $location = get_post_meta( $id, 'nekoko_listing_location', true ); $duration = get_post_meta( $id, 'nekoko_listing_duration', true ); $duration_na = '1' === get_post_meta( $id, 'nekoko_listing_duration_na', true ); $agreed = '1' === get_post_meta( $id, 'nekoko_listing_price_agreed', true ); $price = get_post_meta( $id, 'nekoko_listing_price', true );
+		$id = get_the_ID(); $card_categories = nekoko_core_advanced_search_card_categories( $id ); $root = $card_categories['root']; $demand = $root && 'potraznja' === $root->slug; $pill_class = $demand ? ' nekoko-advanced-results__pill--demand' : ''; $category_names = array_map( static function( $category ) { return $category->name; }, $card_categories['categories'] ); $location = get_post_meta( $id, 'nekoko_listing_location', true ); $duration = get_post_meta( $id, 'nekoko_listing_duration', true ); $duration_na = '1' === get_post_meta( $id, 'nekoko_listing_duration_na', true ); $agreed = '1' === get_post_meta( $id, 'nekoko_listing_price_agreed', true ); $price = get_post_meta( $id, 'nekoko_listing_price', true ); $author_id = (int) get_post_field( 'post_author', $id ); $author = get_userdata( $author_id ); $author_image = absint( get_user_meta( $author_id, 'nekoko_profile_image', true ) );
 		$excerpt = function_exists( 'nekoko_core_listing_excerpt' ) ? nekoko_core_listing_excerpt( $id ) : get_the_excerpt();
 		?>
 		<article class="nekoko-advanced-results__card">
@@ -172,7 +172,8 @@ function nekoko_core_advanced_search_results_html( $params, $empty ) {
 				<h3><?php the_title(); ?></h3>
 				<?php if ( $excerpt ) : ?><p class="nekoko-advanced-results__excerpt"><?php echo esc_html( $excerpt ); ?></p><?php endif; ?>
 				<p class="nekoko-advanced-results__meta"><?php echo esc_html( $location ?: 'Lokacija nije navedena' ); ?></p>
-				<strong><?php echo esc_html( $demand ? ( $duration_na ? 'Trajanje nije primenljivo' : ( $duration ? 'Trajanje ' . $duration : 'Trajanje po dogovoru' ) ) : ( $agreed || '' === $price ? 'Po dogovoru' : number_format_i18n( (float) $price, 0 ) . ' RSD' ) ); ?></strong>
+				<strong class="nekoko-advanced-results__price"><?php echo esc_html( $demand ? ( $duration_na ? 'Trajanje nije primenljivo' : ( $duration ? 'Trajanje ' . $duration : 'Trajanje po dogovoru' ) ) : ( $agreed || '' === $price ? 'Po dogovoru' : number_format_i18n( (float) $price, 0 ) . ' RSD' ) ); ?></strong>
+				<?php if ( $author ) : ?><a class="nekoko-advanced-results__author" href="<?php echo esc_url( get_author_posts_url( $author_id ) ); ?>" aria-label="Autor oglasa: <?php echo esc_attr( $author->display_name ); ?>"><?php if ( $author_image ) { echo wp_get_attachment_image( $author_image, 'thumbnail', false, array( 'alt' => '' ) ); } else { echo get_avatar( $author_id, 48, '', '', array( 'alt' => '' ) ); } ?><span><?php echo esc_html( $author->display_name ); ?></span></a><?php endif; ?>
 				<time class="nekoko-advanced-results__date" datetime="<?php echo esc_attr( get_the_date( DATE_W3C ) ); ?>">Datum objave: <?php echo esc_html( get_the_date( 'j. F Y.' ) ); ?></time>
 			</div>
 		</article>

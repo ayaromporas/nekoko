@@ -195,12 +195,13 @@ function nekoko_widgets_init() {
 add_action( 'widgets_init', 'nekoko_widgets_init' );
 
 function nekoko_enqueue_assets() {
-	wp_enqueue_style( 'nekoko-style', get_stylesheet_uri(), array(), filemtime( get_stylesheet_directory() . '/style.css' ) );
+	wp_enqueue_style( 'nekoko-style', get_stylesheet_uri(), array(), substr( hash_file( 'sha256', get_stylesheet_directory() . '/style.css' ), 0, 12 ) );
 	// The header uses the same named Button styles even on pages without Button blocks.
 	wp_enqueue_style( 'nekoko-button-styles', get_theme_file_uri( 'assets/css/button-styles.css' ), array( 'nekoko-style' ), filemtime( get_theme_file_path( 'assets/css/button-styles.css' ) ) );
-	wp_enqueue_script( 'nekoko-theme', get_theme_file_uri( 'assets/js/theme.js' ), array(), filemtime( get_theme_file_path( 'assets/js/theme.js' ) ), true );
+	wp_enqueue_script( 'nekoko-theme', get_theme_file_uri( 'assets/js/theme.js' ), array(), substr( hash_file( 'sha256', get_theme_file_path( 'assets/js/theme.js' ) ), 0, 12 ), true );
 	if ( is_author() ) {
 		wp_add_inline_script( 'nekoko-theme', "(function(){var dialog=document.querySelector('[data-profile-gallery-dialog]');if(!dialog){return;}var image=dialog.querySelector('[data-profile-gallery-dialog-image]');document.querySelectorAll('[data-profile-gallery-open]').forEach(function(button){button.addEventListener('click',function(){if(!image||!button.dataset.imageSrc){return;}image.src=button.dataset.imageSrc;image.alt=button.dataset.imageAlt||'';if(typeof dialog.showModal==='function'){dialog.showModal();}else{dialog.setAttribute('open','open');}});});}());", 'after' );
+		wp_add_inline_script( 'nekoko-theme', "(function(){var dialog=document.querySelector('[data-profile-collaboration-dialog]'),button=document.querySelector('[data-profile-collaboration-open]');if(!dialog||!button){return;}button.addEventListener('click',function(){if(typeof dialog.showModal==='function'){dialog.showModal();}else{dialog.setAttribute('open','open');}});}());", 'after' );
 	}
 	if ( is_singular( 'oglas' ) ) {
 		wp_enqueue_style( 'nekoko-single-oglas', get_theme_file_uri( 'assets/css/single-oglas.css' ), array( 'nekoko-style' ), filemtime( get_theme_file_path( 'assets/css/single-oglas.css' ) ) );
@@ -276,10 +277,11 @@ function nekoko_header_account_menu() {
 		'postavite-oglas'    => 'post-ad',
 		'postavi-novi-oglas' => 'post-ad',
 		'sacuvani-oglasi'    => 'saved',
+		'zahtevi-za-saradnju' => 'collaboration',
 		'podesavanje-naloga' => 'settings',
 		'podesavanja-naloga' => 'settings',
 	);
-	$priority = array( 'profile', 'listings', 'post-ad', 'saved', 'messages', 'settings' );
+	$priority = array( 'profile', 'listings', 'collaboration', 'post-ad', 'saved', 'messages', 'settings' );
 	$menu_items = array();
 	foreach ( $items as $item ) {
 		$key = sanitize_title( $item->title );
@@ -314,6 +316,7 @@ function nekoko_header_account_icon( $name ) {
 		'messages' => '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
 		'profile'   => '<path d="M20 21a8 8 0 0 0-16 0M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>',
 		'listings'  => '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/>',
+		'collaboration' => '<path d="M8 12.5 10.5 15 16 9.5"/><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"/>',
 		'post-ad'   => '<path d="M12 5v14M5 12h14"/>',
 		'saved'     => '<path d="M20.8 8.5c0 5.4-8.8 10.3-8.8 10.3S3.2 13.9 3.2 8.5A4.8 4.8 0 0 1 12 5.8a4.8 4.8 0 0 1 8.8 2.7Z"/>',
 		'settings'  => '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.3 2.3-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5v.2h-3.2v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1L6 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H4.7v-3.2h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9L6 7.8 8.3 5.5l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5v-.2h3.2v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1 2.3 2.3-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.2V14h-.2a1.7 1.7 0 0 0-1.5 1Z"/>',

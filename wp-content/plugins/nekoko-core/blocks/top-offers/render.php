@@ -9,7 +9,7 @@ $block_id = 'nekoko-top-offers-' . sanitize_html_class( $block['id'] ?? wp_uniqu
 	<div class="nekoko-top-offers__inner">
 		<header class="nekoko-top-offers__header"><h2 id="<?php echo esc_attr( $block_id ); ?>-title"><?php echo esc_html( $title ); ?></h2><p><?php echo esc_html( $text ); ?></p></header>
 		<div class="nekoko-top-offers__grid">
-			<?php foreach ( $items as $item ) : $url = get_term_link( $item['term'] ); if ( is_wp_error( $url ) ) { continue; } ?>
+			<?php foreach ( $items as $item ) : $url = add_query_arg( array( 'tip' => 'ponuda', 'kategorija' => $item['term']->term_id ), function_exists( 'nekoko_core_page_url' ) ? nekoko_core_page_url( 'napredna-pretraga' ) : home_url( '/napredna-pretraga/' ) ); ?>
 				<a class="nekoko-top-offers__item" href="<?php echo esc_url( $url ); ?>"><span class="nekoko-top-offers__icon"><?php echo nekoko_core_top_offer_icon( $item['icon'] ); ?></span><span class="nekoko-top-offers__label"><?php echo esc_html( $item['term']->name ); ?></span></a>
 			<?php endforeach; ?>
 		</div>

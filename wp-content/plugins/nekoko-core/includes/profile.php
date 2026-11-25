@@ -48,18 +48,34 @@ function nekoko_core_profile_image_ids( $user_id ) {
 	);
 }
 
+function nekoko_core_profile_edit_url( $user_id = 0 ) {
+	$url = nekoko_core_page_url( 'moj-profil' );
+	if ( $user_id && current_user_can( 'manage_options' ) && (int) $user_id !== get_current_user_id() ) {
+		$url = add_query_arg( 'nekoko_edit_user', absint( $user_id ), $url );
+	}
+	return $url;
+}
+
 function nekoko_core_profile_submit() {
 	if ( empty( $_POST['nekoko_profile_form'] ) ) {
 		return;
 	}
 
 	nekoko_core_require_login();
-	$id = get_current_user_id();
+	$actor_id = get_current_user_id();
+	$id = absint( $_POST['nekoko_profile_user_id'] ?? $actor_id );
+	$is_admin_edit = $id !== $actor_id;
+	if ( ! $id || ! get_userdata( $id ) || ( $is_admin_edit && ! current_user_can( 'manage_options' ) ) ) {
+		wp_die( 'Nemate dozvolu za izmenu ovog profila.', 403 );
+	}
+	$redirect_url = nekoko_core_profile_edit_url( $id );
 	if ( ! wp_verify_nonce( $_POST['_wpnonce'] ?? '', 'nekoko_profile_form' ) ) {
 		wp_die( 'Nevažeći zahtev.', 403 );
 	}
 
 	$errors  = new WP_Error();
+	$upload_check = nekoko_core_validate_image_uploads( 'nekoko_profile_images' );
+	if ( is_wp_error( $upload_check ) ) { set_transient( 'nekoko_profile_errors_' . $id, $upload_check, MINUTE_IN_SECONDS ); wp_safe_redirect( $redirect_url ); exit; }
 	$user    = get_userdata( $id );
 	$first   = sanitize_text_field( wp_unslash( $_POST['first_name'] ?? '' ) );
 	$last    = sanitize_text_field( wp_unslash( $_POST['last_name'] ?? '' ) );
@@ -77,7 +93,7 @@ function nekoko_core_profile_submit() {
 	} elseif ( email_exists( $email ) && (int) email_exists( $email ) !== $id ) {
 		$errors->add( 'email_taken', 'Ovu email adresu već koristi drugi nalog.' );
 	}
-	if ( $email !== $user->user_email && ! wp_check_password( (string) ( $_POST['current_password'] ?? '' ), $user->user_pass, $id ) ) {
+	if ( $email !== $user->user_email && ! $is_admin_edit && ! wp_check_password( (string) ( $_POST['current_password'] ?? '' ), $user->user_pass, $id ) ) {
 		$errors->add( 'current_password', 'Trenutna lozinka nije ispravna.' );
 	}
 	if ( $phone && ( ! isset( nekoko_core_phone_countries()[ $country ] ) || ! preg_match( '/^[1-9][0-9]{7,14}$/', $phone ) ) ) {
@@ -85,7 +101,7 @@ function nekoko_core_profile_submit() {
 	}
 	if ( $errors->has_errors() ) {
 		set_transient( 'nekoko_profile_errors_' . $id, $errors, MINUTE_IN_SECONDS );
-		wp_safe_redirect( nekoko_core_page_url( 'moj-profil' ) );
+		wp_safe_redirect( $redirect_url );
 		exit;
 	}
 
@@ -101,14 +117,14 @@ function nekoko_core_profile_submit() {
 	if ( count( $remaining_profile_images ) + count( $uploaded_names ) > $max_profile_images ) {
 		$errors->add( 'profile_images', sprintf( 'Možete imati najviše %d profilnih fotografija.', $max_profile_images ) );
 		set_transient( 'nekoko_profile_errors_' . $id, $errors, MINUTE_IN_SECONDS );
-		wp_safe_redirect( nekoko_core_page_url( 'moj-profil' ) );
+		wp_safe_redirect( $redirect_url );
 		exit;
 	}
 
 	$new_profile_images = nekoko_core_handle_user_images( 'nekoko_profile_images', $id );
 	if ( is_wp_error( $new_profile_images ) ) {
 		set_transient( 'nekoko_profile_errors_' . $id, $new_profile_images, MINUTE_IN_SECONDS );
-		wp_safe_redirect( nekoko_core_page_url( 'moj-profil' ) );
+		wp_safe_redirect( $redirect_url );
 		exit;
 	}
 
@@ -139,7 +155,13 @@ function nekoko_core_profile_submit() {
 		delete_user_meta( $id, 'nekoko_profile_image' );
 	}
 
-	if ( $email !== $user->user_email ) {
+	if ( $email !== $user->user_email && $is_admin_edit ) {
+		wp_update_user( array( 'ID' => $id, 'user_email' => $email ) );
+		foreach ( array( 'nekoko_pending_email', 'nekoko_email_change_token_hash', 'nekoko_email_change_expires' ) as $key ) {
+			delete_user_meta( $id, $key );
+		}
+		set_transient( 'nekoko_profile_notice_' . $id, 'Profil korisnika je uspešno sačuvan.', MINUTE_IN_SECONDS );
+	} elseif ( $email !== $user->user_email ) {
 		update_user_meta( $id, 'nekoko_pending_email', $email );
 		nekoko_core_issue_verification( $id, 'email_change', $email );
 		set_transient( 'nekoko_profile_notice_' . $id, 'Poslali smo link za potvrdu na novu email adresu. Vaša trenutna email adresa ostaje aktivna dok ne potvrdite novu.', MINUTE_IN_SECONDS );
@@ -147,7 +169,7 @@ function nekoko_core_profile_submit() {
 		set_transient( 'nekoko_profile_notice_' . $id, 'Profil je uspešno sačuvan.', MINUTE_IN_SECONDS );
 	}
 
-	wp_safe_redirect( nekoko_core_page_url( 'moj-profil' ) );
+	wp_safe_redirect( $redirect_url );
 	exit;
 }
 add_action( 'template_redirect', 'nekoko_core_profile_submit', 8 );
@@ -158,18 +180,24 @@ function nekoko_core_profile_password_submit() {
 	}
 
 	nekoko_core_require_login();
-	$id   = get_current_user_id();
+	$actor_id = get_current_user_id();
+	$id = absint( $_POST['nekoko_profile_user_id'] ?? $actor_id );
+	$is_admin_edit = $id !== $actor_id;
+	if ( ! $id || ! get_userdata( $id ) || ( $is_admin_edit && ! current_user_can( 'manage_options' ) ) ) {
+		wp_die( 'Nemate dozvolu za izmenu ovog profila.', 403 );
+	}
+	$redirect_url = nekoko_core_profile_edit_url( $id );
 	$user = get_userdata( $id );
-	if ( ! wp_verify_nonce( $_POST['_wpnonce'] ?? '', 'nekoko_profile_password' ) || ! wp_check_password( (string) ( $_POST['current_password'] ?? '' ), $user->user_pass, $id ) ) {
+	if ( ! wp_verify_nonce( $_POST['_wpnonce'] ?? '', 'nekoko_profile_password' ) || ( ! $is_admin_edit && ! wp_check_password( (string) ( $_POST['current_password'] ?? '' ), $user->user_pass, $id ) ) ) {
 		set_transient( 'nekoko_profile_password_error_' . $id, 'Trenutna lozinka nije ispravna.', MINUTE_IN_SECONDS );
 	} elseif ( $_POST['new_password'] !== $_POST['new_password_repeat'] || ! nekoko_core_password_is_strong( $_POST['new_password'] ?? '' ) ) {
 		set_transient( 'nekoko_profile_password_error_' . $id, 'Nova lozinka mora imati najmanje 10 karaktera, slovo i broj, a oba unosa moraju biti ista.', MINUTE_IN_SECONDS );
 	} else {
 		wp_set_password( $_POST['new_password'], $id );
-		wp_set_auth_cookie( $id, true );
+		if ( ! $is_admin_edit ) { wp_set_auth_cookie( $id, true ); }
 		set_transient( 'nekoko_profile_notice_' . $id, 'Lozinka je uspešno promenjena.', MINUTE_IN_SECONDS );
 	}
-	wp_safe_redirect( nekoko_core_page_url( 'moj-profil' ) );
+	wp_safe_redirect( $redirect_url );
 	exit;
 }
 add_action( 'template_redirect', 'nekoko_core_profile_password_submit', 9 );

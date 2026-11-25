@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Nekoko Core
  * Description: Osnovni model oglasa, taksonomije i administrativna polja portala Nekoko.
- * Version: 2.1.0
+ * Version: 2.2.0
  * Author: Nekoko
  * Text Domain: nekoko-core
  * Requires at least: 6.3
@@ -17,6 +17,7 @@ require_once __DIR__ . '/includes/classification.php';
 require_once __DIR__ . '/includes/classification-admin.php';
 require_once __DIR__ . '/includes/category-media.php';
 require_once __DIR__ . '/includes/settings.php';
+require_once __DIR__ . '/includes/member-role-tools.php';
 require_once __DIR__ . '/includes/header-fields.php';
 require_once __DIR__ . '/includes/home-hero-block.php';
 require_once __DIR__ . '/includes/offer-hero-block.php';
@@ -38,15 +39,20 @@ require_once __DIR__ . '/includes/form-pages.php';
 require_once __DIR__ . '/includes/email-verification.php';
 require_once __DIR__ . '/includes/email-verification-admin.php';
 require_once __DIR__ . '/includes/authentication.php';
+require_once __DIR__ . '/includes/password-recovery.php';
+require_once __DIR__ . '/includes/member-screens.php';
 require_once __DIR__ . '/includes/registration.php';
 require_once __DIR__ . '/includes/listing-permissions.php';
+require_once __DIR__ . '/includes/listing-moderation.php';
 require_once __DIR__ . '/includes/listing-form.php';
+require_once __DIR__ . '/includes/listing-emails.php';
 require_once __DIR__ . '/includes/test-listings.php';
 require_once __DIR__ . '/includes/listing-interactions.php';
 require_once __DIR__ . '/includes/reviews.php';
 require_once __DIR__ . '/includes/user-dashboard.php';
 require_once __DIR__ . '/includes/profile.php';
 require_once __DIR__ . '/includes/messages.php';
+require_once __DIR__ . '/includes/messages-admin.php';
 
 function nekoko_core_activate() {
 	nekoko_core_register_model();
